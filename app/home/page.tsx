@@ -1,5 +1,7 @@
+"use client"
 import React from 'react';
 import ProductCard from '../components/card/ProductCard';
+import { supabase } from '../lib/supabaseClient';
 import Link from 'next/link';
 import SearchBar from '../components/SearchBar';
 
@@ -8,10 +10,25 @@ export default function Home() {
   const [carouselIndex, setCarouselIndex] = React.useState(0);
 
   const [phones, setPhones] = React.useState<any[]>([]);
+  const [user, setUser] = React.useState<any>(null);
 
   React.useEffect(() => {
     // Placeholder: replace with real data fetching logic.
     setPhones([]);
+
+    let mounted = true;
+    supabase.auth.getUser().then(({ data }) => {
+      if (mounted) setUser(data?.user ?? null);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      mounted = false;
+      if (sub?.subscription) sub.subscription.unsubscribe();
+    };
   }, []);
 
   const handleSearch = (query: string) => {
@@ -32,6 +49,45 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
+      {/* Navigation */}
+      <nav className="w-full bg-black/60 backdrop-blur sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-4">
+              <Link href="/" className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-[#f7f435] rounded-xl flex items-center justify-center text-black font-bold">IF</div>
+                <span className="font-bold text-white">IntelliFone</span>
+              </Link>
+            </div>
+
+            <div className="hidden md:flex items-center gap-6">
+              <Link href="/marketplace" className="text-gray-300 hover:text-white">Marketplace</Link>
+              <Link href="/ai-verification" className="text-gray-300 hover:text-white">AI Verification</Link>
+              <Link href="/about" className="text-gray-300 hover:text-white">About</Link>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {user ? (
+                <button
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    setUser(null);
+                    window.location.href = '/home';
+                  }}
+                  className="px-3 py-1 rounded-lg bg-[#f7f435] text-black font-semibold"
+                >
+                  Logout
+                </button>
+              ) : (
+                <>
+                  <Link href="/signin" className="text-gray-300 hover:text-white">Sign In</Link>
+                  <Link href="/signup" className="px-3 py-1 rounded-lg bg-[#f7f435] text-black font-semibold">Sign Up</Link>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </nav>
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">

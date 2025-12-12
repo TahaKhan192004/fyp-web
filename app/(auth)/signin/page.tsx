@@ -14,15 +14,24 @@ export default function SigninPage() {
   const handleSignin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
+
     if (error) {
       setError(error.message);
       return;
     }
-    router.push('/');
+
+    // If sign-in returned a session or user, redirect to home.
+    if (data?.session || data?.user) {
+      router.push('/home');
+      return;
+    }
+
+    // No session returned (e.g. magic link flow) — prompt the user.
+    setError('Check your email to complete sign-in.');
   };
 
   return (
@@ -68,7 +77,7 @@ export default function SigninPage() {
         </div>
         <p className="text-gray-400 mt-6 text-center text-sm">
           Don't have an account?{' '}
-          <Link href="/auth/signup" className="text-[#f7f435] hover:underline">
+          <Link href="/signup" className="text-[#f7f435] hover:underline">
             Sign Up
           </Link>
         </p>
