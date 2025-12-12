@@ -6,5 +6,9 @@ export async function GET() {
     .select("*")
     .order("created_at", { ascending: false });
 
-  return Response.json(data);
+  if (error) {
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  }
+
+  return new Response(JSON.stringify(data), { status: 200 });
 }

@@ -15,6 +15,7 @@ export default function SellPhone() {
     ram: '',
     storage: '',
     description: '',
+    price: 0,
     pta_status: 'approved',
   });
 
@@ -161,10 +162,13 @@ export default function SellPhone() {
             <input className="w-full bg-black border border-gray-700 p-3 rounded-xl" placeholder="Company"
               onChange={(e) => setFormData({ ...formData, company: e.target.value })} required />
 
-            <input className="w-full bg-black border border-gray-700 p-3 rounded-xl" placeholder="RAM (e.g. 8GB)"
+            <input className="w-full bg-black border border-gray-700 p-3 rounded-xl" placeholder="RAM (e.g. 8)"
               onChange={(e) => setFormData({ ...formData, ram: e.target.value })} required />
 
-            <input className="w-full bg-black border border-gray-700 p-3 rounded-xl" placeholder="Storage (e.g. 256GB)"
+            <input className="w-full bg-black border border-gray-700 p-3 rounded-xl" placeholder="Storage (e.g. 256)"
+              onChange={(e) => setFormData({ ...formData, storage: e.target.value })} required />
+
+            <input className="w-full bg-black border border-gray-700 p-3 rounded-xl" placeholder="Price (in PKR)"
               onChange={(e) => setFormData({ ...formData, storage: e.target.value })} required />
 
             <textarea className="w-full bg-black border border-gray-700 p-3 rounded-xl" placeholder="Description..."
