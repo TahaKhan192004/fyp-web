@@ -45,7 +45,6 @@ export default function Marketplace() {
       return res.json();
     },
   });
-
   // Unique companies
   const companies = [...new Set(allPhones.map((p) => p.company).filter(Boolean))];
 

@@ -102,13 +102,16 @@ export default function Home() {
               <div className="flex flex-wrap gap-4">
                 <Link 
                   href="/marketplace"
-                  className="px-8 py-4 rounded-xl yellow-btn text-lg neon-glow"
+                  className="px-8 py-4 rounded-xl  text-lg neon-glow text-black font-semibold flex items-center justify-center gap-2 disabled:opacity-50 transition"
+                   style={{
+                        backgroundColor: "#f7f434",
+                  }}
                 >
                   Get Started
                 </Link>
                 <Link 
                   href="/ai-verification"
-                  className="px-8 py-4 rounded-xl glass-panel border border-[#f7f435] text-lg hover:bg-[#f7f435] hover:text-black transition-all"
+                  className="px-8 py-4 rounded-xl glass-panel border border-[#f7f435] font-semibold text-lg "
                 >
                   Verify My Phone
                 </Link>
@@ -266,7 +269,7 @@ export default function Home() {
         <h2 className="text-3xl font-bold text-center mb-12">Why Choose IntelliFone?</h2>
         
         <div className="grid md:grid-cols-3 gap-8">
-          <div className="glass-panel rounded-2xl p-8 text-center hover:scale-105 transition-transform">
+          <div className="rounded-2xl p-8 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 text-center hover:scale-105 transition-transform">
             <div className="w-16 h-16 rounded-full bg-[#f7f435]/20 flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">✨</span>
             </div>
@@ -276,7 +279,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="glass-panel rounded-2xl p-8 text-center hover:scale-105 transition-transform">
+          <div className="rounded-2xl p-8 bg-white/5 backdrop-blur-xl border border-white/10 p-8 text-center hover:scale-105 transition-transform">
             <div className="w-16 h-16 rounded-full bg-[#f7f435]/20 flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">📈</span>
             </div>
@@ -286,7 +289,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="glass-panel rounded-2xl p-8 text-center hover:scale-105 transition-transform">
+          <div className="rounded-2xl p-8 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 text-center hover:scale-105 transition-transform">
             <div className="w-16 h-16 rounded-full bg-[#f7f435]/20 flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">🛡️</span>
             </div>
@@ -300,7 +303,7 @@ export default function Home() {
 
       {/* Ready to Start Trading */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="glass-panel rounded-2xl p-12 text-center relative overflow-hidden">
+        <div className="rounded-2xl p-8 bg-white/5 backdrop-blur-xl border border-white/10 p-12 text-center relative overflow-hidden">
           <div className="absolute inset-0 bg-[#f7f435]/5"></div>
           <div className="relative z-10">
             <h2 className="text-4xl font-bold mb-4">Ready to Start Trading?</h2>
@@ -309,7 +312,8 @@ export default function Home() {
             </p>
             <Link 
               href="/sell"
-              className="inline-block px-10 py-4 rounded-xl yellow-btn text-lg neon-glow"
+              className="inline-block px-10 py-4 rounded-xl text-black text-lg font-semibold neon-glow"
+              style={{ backgroundColor: "#f7f434" }}
             >
               Sell Your Phone
             </Link>

@@ -52,9 +52,15 @@ export default function ProductCard({ phone }: { phone: Phone }) {
           )}
         </div>
 
-        <Link href={`/marketplace/${phone.id}`} className="block w-full text-center py-2 rounded-lg yellow-btn">
-          View Details
-        </Link>
+          <Link
+            href={`/phones/${phone.id}`}
+            className="block w-full text-center py-2 rounded-lg bg-yellow-400 text-black font-semibold hover:bg-yellow-500 transition"
+          >
+            View Details
+          </Link>
+
+
+
       </div>
     </div>
   );
