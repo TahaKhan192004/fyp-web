@@ -101,7 +101,7 @@ export default function SellPhone() {
     }
 
     alert('Phone listed successfully!');
-    router.push(`/products/${data.id}`);
+    router.push(`/marketplace`);
    
 
   };

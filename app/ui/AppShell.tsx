@@ -55,10 +55,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <div className="hidden md:flex gap-3 items-center">
             {user ? (
               <>
+                <Link href="/saved"
+                className='font-semibold'
+                >Saved </Link>
                 <span className="flex items-center gap-2">
                   <User className="w-4 h-4" />
                   {user.email}
                 </span>
+                
                 <button onClick={handleLogout} className="hover:text-red-400">
                   <LogOut />
                 </button>

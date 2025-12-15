@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     const fastapiData = await fastapiRes.json();
     console.log("FastAPI response:", fastapiData);
 
-
+    const { pdf_path, condition_score } = fastapiData;
     if (!fastapiData.pdf_path) {
       return NextResponse.json({ error: "PDF path missing" }, { status: 500 });
     }
@@ -57,6 +57,7 @@ export async function POST(req: Request) {
         ...formData,
         user_id,
         pictures: pictureUrls,
+        condition_score: condition_score,
         damage_report_pdf: publicData.publicUrl,
       })
       .select()
