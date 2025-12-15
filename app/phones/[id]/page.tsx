@@ -105,7 +105,7 @@ export default function ProductDetailPage() {
     });
 
     localStorage.setItem('cart', JSON.stringify(cart));
-    alert('Added to cart');
+    alert('saved');
   }
 
   if (loading) {
@@ -269,7 +269,7 @@ export default function ProductDetailPage() {
                 className="px-6 py-3.5 rounded-lg text-black font-semibold"
                  style={{ backgroundColor: '#f7f434' }}
               >
-                Add to Cart
+                Save
               </button>
 
               {phone.damage_report_pdf && (
@@ -291,7 +291,7 @@ export default function ProductDetailPage() {
               </Link>
 
               <Link
-                href={`/report?id=${phone.id}`}
+                href={`/report/${phone.id}`}
                 className="px-6 py-3.5 rounded-lg glass-panel border border-gray-700 hover:border-red-500"
               >
                 <Flag />
