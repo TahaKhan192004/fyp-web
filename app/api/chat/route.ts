@@ -3,15 +3,32 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = 'force-dynamic';
 
+function requireBaseUrl(envName: string) {
+  const value = process.env[envName];
+  if (!value || !value.trim()) throw new Error(`Missing ${envName} in environment`);
+  return value;
+}
+
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const userId = url.searchParams.get("user_id");
   const conversationId = url.searchParams.get("conversation_id");
 
+  let baseUrl: string;
+  try {
+    baseUrl = requireBaseUrl("FASTAPI_CHAT_BASE_URL");
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Missing FASTAPI_CHAT_BASE_URL in environment" },
+      { status: 500 }
+    );
+  }
+
   // — Branch 1: fetch all conversations for a user
   if (userId) {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/conversations/${encodeURIComponent(userId)}`);
+      const endpoint = new URL(`/conversations/${encodeURIComponent(userId)}`, baseUrl).toString();
+      const res = await fetch(endpoint);
       if (!res.ok) {
         const detail = await res.text().catch(() => "");
         return NextResponse.json(
@@ -29,7 +46,8 @@ export async function GET(req: NextRequest) {
   // — Branch 2: fetch messages for a specific conversation
   if (conversationId) {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/chat/${encodeURIComponent(conversationId)}`);
+      const endpoint = new URL(`/chat/${encodeURIComponent(conversationId)}`, baseUrl).toString();
+      const res = await fetch(endpoint);
       if (!res.ok) {
         const detail = await res.text().catch(() => "");
         return NextResponse.json(
@@ -55,7 +73,10 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const res = await fetch("http://127.0.0.1:8000/chat-stream", {
+    const baseUrl = requireBaseUrl("FASTAPI_CHAT_BASE_URL");
+    const endpoint = new URL("/chat-stream", baseUrl).toString();
+
+    const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -76,6 +97,9 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (err) {
-    return NextResponse.json({ error: "Failed to chat" }, { status: 500 });
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to chat" },
+      { status: 500 }
+    );
   }
 }

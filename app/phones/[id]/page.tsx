@@ -38,6 +38,32 @@ interface Phone {
   condition_score?: number;
   status?: string;
   damage_report_pdf?: string;
+  sensor_diagnostics_result?: unknown;
+  'sensor-diagnostics-result'?: unknown;
+}
+
+function getSensorDiagnostics(phone: Phone): unknown[] {
+  const raw = phone.sensor_diagnostics_result ?? phone['sensor-diagnostics-result'];
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === 'string') {
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function formatPrimitive(value: unknown) {
+  if (value === null) return 'null';
+  if (value === undefined) return '—';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return Number.isFinite(value) ? String(value) : '—';
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  return null;
 }
 
 export default function ProductDetailPage() {
@@ -203,6 +229,8 @@ async function handleContact(receiverId: string) {
     )
     .slice(0, 4);
 
+  const sensorDiagnostics = getSensorDiagnostics(phone);
+
   return (
     <div className="min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4">
@@ -304,6 +332,64 @@ async function handleContact(receiverId: string) {
                 {phone.description}
               </div>
             )}
+
+            {/* Sensor Diagnostics */}
+            <div className="glass-panel p-4 rounded-xl space-y-3">
+              <div className="flex items-end justify-between gap-3">
+                <h3 className="font-semibold">Sensor Diagnostics</h3>
+                <span className="text-xs text-gray-400">
+                  {sensorDiagnostics.length > 0 ? `${sensorDiagnostics.length} result(s)` : 'Not provided'}
+                </span>
+              </div>
+
+              {sensorDiagnostics.length === 0 ? (
+                <p className="text-sm text-gray-400">
+                  No sensor diagnostics result found for this ad (web uploads usually don&apos;t include it).
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {sensorDiagnostics.map((item, idx) => {
+                    const primitive = formatPrimitive(item);
+
+                    return (
+                      <div key={idx} className="rounded-xl border border-gray-800 bg-black/20 p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm font-semibold text-gray-200">Test {idx + 1}</div>
+                        </div>
+
+                        {primitive !== null ? (
+                          <div className="text-sm text-gray-300 break-words">{primitive}</div>
+                        ) : typeof item === 'object' && item !== null && !Array.isArray(item) ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {Object.entries(item as Record<string, unknown>)
+                              .sort(([a], [b]) => a.localeCompare(b))
+                              .map(([key, value]) => {
+                                const v = formatPrimitive(value);
+                                return (
+                                  <div key={key} className="flex items-start justify-between gap-3 rounded-lg border border-gray-800 bg-black/30 px-3 py-2">
+                                    <div className="text-xs text-gray-400">{key}</div>
+                                    {v !== null ? (
+                                      <div className="text-xs text-gray-200 text-right break-words max-w-[70%]">{v}</div>
+                                    ) : (
+                                      <pre className="text-xs text-gray-200 text-right whitespace-pre-wrap break-words max-w-[70%]">
+                                        {JSON.stringify(value, null, 2)}
+                                      </pre>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        ) : (
+                          <pre className="text-xs text-gray-200 whitespace-pre-wrap break-words">
+                            {JSON.stringify(item, null, 2)}
+                          </pre>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             {/* Seller */}
             <div className="glass-panel p-4 rounded-xl">

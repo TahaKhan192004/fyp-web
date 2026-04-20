@@ -98,6 +98,10 @@ export default function SellPhone() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image_urls: images })
       });
+      if (!res.ok) {
+        alert('Server is busy, please try again later.');
+        return;
+      }
       const data = await res.json();
       console.log('AI Damage Detection Result:', data);
       setConditionScore(data.condition_score || 0);
@@ -111,7 +115,7 @@ export default function SellPhone() {
         panel_line: prev.panel_line || (data.ai_detected?.panel_line ?? false)
       }));
     } catch (err) {
-      alert('Error analyzing images.');
+      alert('Server is busy, please try again later.');
     }
     setAnalyzing(false);
   };

@@ -26,6 +26,8 @@ interface Phone {
   description?: string;
   pta_status?: boolean;
   price?: number;
+  sensor_diagnostics_result?: unknown;
+  'sensor-diagnostics-result'?: unknown;
 }
 export default function Marketplace() {
   const [searchQuery, setSearchQuery] = React.useState("");

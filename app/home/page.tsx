@@ -131,10 +131,10 @@ export default function Home() {
                   Get Started
                 </Link>
                 <Link 
-                  href="/ai-verification"
+                  href="/sell-phone"
                   className="px-8 py-4 rounded-xl glass-panel border border-[#f7f435] font-semibold text-lg "
                 >
-                  Verify My Phone
+                   Evaluate Your Phone
                 </Link>
               </div>
             </div>

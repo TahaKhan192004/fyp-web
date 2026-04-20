@@ -38,6 +38,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const navLinks = [
     { href: '/marketplace', label: 'Marketplace' },
     { href: '/add', label: 'Sell' },
+    { href: '/damage-detection', label: 'Damage Detection' },
     { href: '/recommendation', label: 'Recommendations' },
     { href: '/about', label: 'About' },
     { href: '/contactus', label: 'Contact Us' },

@@ -1,7 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { CheckCircle } from "lucide-react";
-import { UUID } from "crypto";
+import { Activity, CheckCircle } from "lucide-react";
 
 interface Phone {
   id: string;
@@ -16,9 +15,29 @@ interface Phone {
   description?: string;
   pta_status?: boolean;
   price?: number;
+  sensor_diagnostics_result?: unknown;
+  'sensor-diagnostics-result'?: unknown;
+}
+
+function getSensorDiagnostics(phone: Phone): unknown[] {
+  const raw = phone.sensor_diagnostics_result ?? phone['sensor-diagnostics-result'];
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === 'string') {
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
 }
 
 export default function ProductCard({ phone }: { phone: Phone }) {
+  const diagnostics = getSensorDiagnostics(phone);
+  const sensorsTested = diagnostics.length > 0;
+
   return (
     <div className="glass-panel rounded-2xl overflow-hidden hover:scale-105 transition-transform duration-300">
       <div className="relative aspect-square bg-gray-900">
@@ -32,6 +51,18 @@ export default function ProductCard({ phone }: { phone: Phone }) {
             <CheckCircle className="w-3 h-3" /> Verified
           </div>
         )}
+
+        <div
+          className={`absolute bottom-3 left-3 px-3 py-1 rounded-full flex items-center gap-1 text-xs font-semibold border ${
+            sensorsTested
+              ? "bg-emerald-400/15 text-emerald-200 border-emerald-400/25"
+              : "bg-gray-900/50 text-gray-200 border-gray-700/60"
+          }`}
+          title={sensorsTested ? "Sensor diagnostics available" : "Sensor diagnostics not provided"}
+        >
+          <Activity className="w-3 h-3" />
+          {sensorsTested ? `Sensors tested (${diagnostics.length})` : "Sensors untested"}
+        </div>
       </div>
 
       <div className="p-4">

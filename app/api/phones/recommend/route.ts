@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
+function requireBaseUrl(envName: string) {
+  const value = process.env[envName];
+  if (!value || !value.trim()) throw new Error(`Missing ${envName} in environment`);
+  return value;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -17,16 +23,16 @@ export async function GET(req: NextRequest) {
     }
 
     // 🔁 Call FastAPI streaming endpoint
-    const response = await fetch(
-      `http://127.0.0.1:8000/recommend-stream/?max_price=${max_price}&priority=${encodeURIComponent(
-        priority
-      )}`,
-      {
-        method: 'GET',
-        headers: { Accept: 'text/plain' },
-        cache: 'no-store',
-      }
-    );
+    const baseUrl = requireBaseUrl('FASTAPI_RECOMMENDATION_BASE_URL');
+    const endpoint = new URL('/recommend-stream/', baseUrl);
+    endpoint.searchParams.set('max_price', max_price);
+    endpoint.searchParams.set('priority', priority);
+
+    const response = await fetch(endpoint.toString(), {
+      method: 'GET',
+      headers: { Accept: 'text/plain' },
+      cache: 'no-store',
+    });
 
     if (!response.ok || !response.body) {
       throw new Error('FastAPI streaming request failed');

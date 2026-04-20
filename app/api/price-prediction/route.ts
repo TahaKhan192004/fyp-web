@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
 
+function requireBaseUrl(envName: string) {
+  const value = process.env[envName];
+  if (!value || !value.trim()) throw new Error(`Missing ${envName} in environment`);
+  return value;
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.formData(); // receive as FormData from frontend
@@ -11,16 +17,34 @@ export async function POST(req: Request) {
       fd.append(key, String(value));
     }
 
-    const res = await fetch('http://127.0.0.1:8000/price-prediction/', {
+    const baseUrl = requireBaseUrl('FASTAPI_MAIN_BASE_URL');
+    const endpoint = new URL('/price-prediction/', baseUrl).toString();
+
+    const res = await fetch(endpoint, {
       method: 'POST',
       body: fd
     });
 
-    const data = await res.json();
+    let data: any = null;
+    try {
+      data = await res.json();
+    } catch {
+      data = null;
+    }
 
-    return NextResponse.json(data);
+    if (!res.ok) {
+      return NextResponse.json(
+        { error: data?.detail ?? data?.error ?? 'Price prediction failed' },
+        { status: res.status }
+      );
+    }
+
+    return NextResponse.json(data ?? {});
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: 'Price prediction failed' }, { status: 500 });
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : 'Price prediction failed' },
+      { status: 500 }
+    );
   }
 }

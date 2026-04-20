@@ -1,6 +1,11 @@
 import { supabase } from "@/app/lib/supabaseClient";
 import { NextResponse } from "next/server";
-import fs from "fs";
+
+function requireBaseUrl(envName: string) {
+  const value = process.env[envName];
+  if (!value || !value.trim()) throw new Error(`Missing ${envName} in environment`);
+  return value;
+}
 
 export async function POST(req: Request) {
   try {
@@ -11,50 +16,47 @@ export async function POST(req: Request) {
     }
 
     // 1️⃣ Call FastAPI
-    const fastapiRes = await fetch("http://127.0.0.1:8000/damage-detection/", {
+    const baseUrl = requireBaseUrl("FASTAPI_MAIN_BASE_URL");
+    const endpoint = new URL("/damage-detection/", baseUrl).toString();
+
+    const fastapiRes = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ image_urls: pictureUrls }),
     });
 
-    const fastapiData = await fastapiRes.json();
-    console.log("FastAPI response:", fastapiData);
-
-    const { pdf_path, condition_score } = fastapiData;
-    if (!fastapiData.pdf_path) {
-      return NextResponse.json({ error: "PDF path missing" }, { status: 500 });
+    let fastapiData: any = null;
+    try {
+      fastapiData = await fastapiRes.json();
+    } catch {
+      fastapiData = null;
     }
 
-    // // 2️⃣ Read PDF from disk
-    // const pdfBuffer = fs.readFileSync(fastapiData.pdf_path);
+    if (!fastapiRes.ok) {
+      console.error("FastAPI damage detection failed:", fastapiRes.status, fastapiData);
+      return NextResponse.json(
+        { error: "Server is busy, please try again later." },
+        { status: 503 }
+      );
+    }
 
-    // // 3️⃣ Upload to Supabase
-    // const pdfName = `damage_reports/report_${Date.now()}.pdf`;
+    const { pdf_url, condition_score } = fastapiData; // ✅ was pdf_path, FastAPI returns pdf_url
 
-    // const { error: uploadError } = await supabase.storage
-    //   .from("phone-reports")
-    //   .upload(pdfName, pdfBuffer, {
-    //     contentType: "application/pdf",
-    //     upsert: true,
-    //   });
-
-    // if (uploadError) {
-    //   return NextResponse.json({ error: uploadError.message }, { status: 500 });
-    // }
-
-    
+    if (!pdf_url) {
+      return NextResponse.json({ error: "PDF URL missing" }, { status: 500 });
+    }
 
     console.log(formData.price);
 
-    // 4️⃣ Save DB record
+    // 2️⃣ Save DB record
     const { data, error: dbError } = await supabase
       .from("mobile_phones")
       .insert({
         ...formData,
         user_id,
         pictures: pictureUrls,
-        condition_score: condition_score,
-        damage_report_pdf: pdf_path, // Store the local path for now
+        condition_score,
+        damage_report_pdf: pdf_url,
       })
       .select()
       .single();
@@ -66,7 +68,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       id: data.id,
-      pdf_url: pdf_path, // Return the local path for now
+      pdf_url,
     });
 
   } catch (err) {
