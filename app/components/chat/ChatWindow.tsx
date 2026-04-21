@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import { useRealtimeChat } from "@/hooks/useRealtimeChat";
 import "./chat.css";
@@ -42,6 +44,7 @@ function getInitials(name: string) {
 }
 
 export default function ChatWindow({ currentUserId, conversationId }: ChatWindowProps) {
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [recipientId, setRecipientId] = useState<string | null>(null);
@@ -205,6 +208,13 @@ export default function ChatWindow({ currentUserId, conversationId }: ChatWindow
     <div className="chat-window">
       {/* Header */}
       <div className="chat-header">
+        <button 
+          onClick={() => router.push("/chats")}
+          className="md:hidden p-2 mr-2 text-zinc-400 hover:text-white transition-colors"
+          aria-label="Back to inbox"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
         <div className="chat-header-avatar">{getInitials(recipientName)}</div>
         <div className="chat-header-info">
           <div className="chat-header-name">{recipientName}</div>

@@ -103,7 +103,7 @@ export default function ReportListing() {
     <div className="min-h-screen flex flex-col">
       <div className="flex-1 py-8 max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <Link
-          href={`/product/${phoneId}`}
+          href={`/phones/${phoneId}`}
           className="flex items-center gap-2 text-gray-400 hover:text-[#f7f435] mb-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />

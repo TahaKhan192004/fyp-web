@@ -3,6 +3,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Trash2, Users, Smartphone, BarChart3 } from 'lucide-react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from 'recharts';
 
 interface UserRow {
   id: string;
@@ -46,6 +56,27 @@ function buildMonthlySeries(dates: Array<string | undefined>, months = 6): Month
   return points;
 }
 
+// Custom tooltip shared by both charts
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: { value: number }[];
+  label?: string;
+}) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-black/80 border border-gray-700 rounded-xl px-4 py-2 text-sm shadow-xl">
+        <span className="text-gray-400">{label}: </span>
+        <span className="text-[#f7f435] font-bold">{payload[0].value}</span>
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function AdminPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [ads, setAds] = useState<AdRow[]>([]);
@@ -88,9 +119,6 @@ export default function AdminPage() {
     () => buildMonthlySeries(ads.map((a) => a.created_at)),
     [ads]
   );
-
-  const maxUserCount = Math.max(1, ...userSeries.map((p) => p.count));
-  const maxAdCount = Math.max(1, ...adSeries.map((p) => p.count));
 
   const handleDeleteUser = async (userId: string) => {
     const ok = window.confirm(
@@ -157,6 +185,7 @@ export default function AdminPage() {
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         </div>
 
+        {/* Stat Cards */}
         <div className="grid md:grid-cols-3 gap-6">
           <div className="glass-panel rounded-2xl p-6 border border-gray-800">
             <div className="flex items-center gap-3 text-gray-400 mb-2">
@@ -181,44 +210,90 @@ export default function AdminPage() {
           </div>
         </div>
 
+        {/* Charts */}
         <div className="grid lg:grid-cols-2 gap-6">
+          {/* Users Chart */}
           <div className="glass-panel rounded-2xl p-6 border border-gray-800">
-            <h2 className="text-xl font-bold mb-4">New Users (Last 6 Months)</h2>
-            <div className="flex items-end gap-3 h-40">
-              {userSeries.map((p) => (
-                <div key={p.label} className="flex-1 flex flex-col items-center gap-2">
-                  <div
-                    className="w-full rounded-lg"
-                    style={{
-                      height: `${(p.count / maxUserCount) * 100}%`,
-                      backgroundColor: '#f7f434',
-                    }}
-                  />
-                  <span className="text-xs text-gray-400">{p.label}</span>
-                </div>
-              ))}
-            </div>
+            <h2 className="text-xl font-bold mb-6">New Users (Last 6 Months)</h2>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={userSeries} barCategoryGap="30%">
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(255,255,255,0.06)"
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fill: '#9ca3af', fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fill: '#9ca3af', fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={28}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(247,244,53,0.07)' }} />
+                <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={48} isAnimationActive>
+                  {userSeries.map((entry, index) => (
+                    <Cell
+                      key={`user-cell-${index}`}
+                      fill={
+                        index === userSeries.length - 1
+                          ? '#f7f435'
+                          : 'rgba(247,244,53,0.45)'
+                      }
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
 
+          {/* Ads Chart */}
           <div className="glass-panel rounded-2xl p-6 border border-gray-800">
-            <h2 className="text-xl font-bold mb-4">New Ads (Last 6 Months)</h2>
-            <div className="flex items-end gap-3 h-40">
-              {adSeries.map((p) => (
-                <div key={p.label} className="flex-1 flex flex-col items-center gap-2">
-                  <div
-                    className="w-full rounded-lg"
-                    style={{
-                      height: `${(p.count / maxAdCount) * 100}%`,
-                      backgroundColor: '#f7f434',
-                    }}
-                  />
-                  <span className="text-xs text-gray-400">{p.label}</span>
-                </div>
-              ))}
-            </div>
+            <h2 className="text-xl font-bold mb-6">New Ads (Last 6 Months)</h2>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={adSeries} barCategoryGap="30%">
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(255,255,255,0.06)"
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="label"
+                  tick={{ fill: '#9ca3af', fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fill: '#9ca3af', fontSize: 12 }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={28}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(247,244,53,0.07)' }} />
+                <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={48} isAnimationActive>
+                  {adSeries.map((entry, index) => (
+                    <Cell
+                      key={`ad-cell-${index}`}
+                      fill={
+                        index === adSeries.length - 1
+                          ? '#f7f435'
+                          : 'rgba(247,244,53,0.45)'
+                      }
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
+        {/* Users & Ads Tables */}
         <div className="grid lg:grid-cols-2 gap-6">
           <div className="glass-panel rounded-2xl p-6 border border-gray-800">
             <h2 className="text-xl font-bold mb-4">Users</h2>

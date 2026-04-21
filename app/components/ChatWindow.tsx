@@ -2,17 +2,31 @@
 import { useEffect, useState, useRef } from "react";
 import MessageInput from "./MessageInput";
 
-export default function ChatWindow({ conversationId, userId, onNewConversation }: any) {
+import { ArrowLeft } from "lucide-react";
+export default function ChatWindow({ conversationId, userId, onNewConversation, onBack }: any) {
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = (force = false) => {
+    if (!messagesEndRef.current) return;
+    if (force) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      return;
+    }
+    const scrollContainer = messagesEndRef.current.closest('.overflow-y-auto');
+    if (scrollContainer) {
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+      if (scrollHeight - scrollTop - clientHeight < 150) {
+        messagesEndRef.current.scrollIntoView();
+      }
+    } else {
+      messagesEndRef.current.scrollIntoView();
+    }
   };
 
-  useEffect(scrollToBottom, [messages]);
+  useEffect(() => { scrollToBottom(false) }, [messages]);
 
   useEffect(() => {
     async function fetchMessages() {
@@ -53,6 +67,8 @@ export default function ChatWindow({ conversationId, userId, onNewConversation }
         console.error(err);
       }
       setLoading(false);
+      // Force scroll on initial load
+      setTimeout(() => scrollToBottom(true), 100);
     }
     fetchMessages();
   }, [conversationId]);
@@ -62,6 +78,7 @@ export default function ChatWindow({ conversationId, userId, onNewConversation }
 
     // Immediately show user bubble
     setMessages((prev) => [...prev, { role: "user", content: msg }]);
+    setTimeout(() => scrollToBottom(true), 100);
 
     // Add a placeholder assistant bubble that we'll fill in as chunks arrive
     setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
@@ -147,10 +164,19 @@ export default function ChatWindow({ conversationId, userId, onNewConversation }
   ];
 
   return (
-    <div className="flex-1 flex flex-col h-screen bg-[#09090b] text-zinc-100">
+    <div className="flex-1 flex flex-col h-screen bg-[#09090b] text-zinc-100 max-w-full overflow-hidden">
       {/* Header */}
-      <div className="h-16 border-b border-zinc-800 flex items-center px-8 bg-[#09090b]/80 backdrop-blur-md sticky top-0 z-10">
-        <div className="flex items-center gap-3">
+      <div className="h-16 border-b border-zinc-800 flex items-center px-4 md:px-8 bg-[#09090b]/80 backdrop-blur-md sticky top-0 z-10 w-full shrink-0">
+        <div className="flex items-center gap-3 w-full">
+          {onBack && (
+            <button 
+              onClick={onBack}
+              className="md:hidden p-2 -ml-2 mr-1 text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-zinc-800"
+              aria-label="Back to conversations"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          )}
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#facc15] to-[#f59e0b] flex items-center justify-center text-black font-bold text-base shadow-lg">
             🤖
           </div>
@@ -165,7 +191,7 @@ export default function ChatWindow({ conversationId, userId, onNewConversation }
       </div>
 
       {/* Message Area */}
-      <div className="flex-1 overflow-y-auto p-6 lg:px-24 space-y-4">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:px-24 space-y-4">
         {loading ? (
           <div className="flex justify-center py-10">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#facc15]" />
@@ -230,7 +256,7 @@ export default function ChatWindow({ conversationId, userId, onNewConversation }
       </div>
 
       {/* Input bar */}
-      <div className="p-6 lg:px-24 bg-gradient-to-t from-[#09090b] via-[#09090b] to-transparent">
+      <div className="p-4 md:p-6 lg:px-24 bg-gradient-to-t from-[#09090b] via-[#09090b] to-transparent shrink-0">
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-2 focus-within:border-[#facc15]/50 transition-all shadow-2xl">
           <MessageInput onSend={sendMessage} disabled={isStreaming} />
         </div>

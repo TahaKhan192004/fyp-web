@@ -144,7 +144,7 @@ export default function Home() {
               
               <div className="relative">
                 {/* Phone Frame */}
-                <div className="relative w-[320px] h-[640px] bg-gray-900 rounded-[3rem] border-8 border-gray-800 shadow-2xl overflow-hidden">
+                <div className="relative w-full max-w-[320px] h-[580px] md:h-[640px] bg-gray-900 rounded-[3rem] border-8 border-gray-800 shadow-2xl overflow-hidden mx-auto md:mx-0">
                   {/* Notch */}
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-7 bg-black rounded-b-3xl z-10"></div>
                   

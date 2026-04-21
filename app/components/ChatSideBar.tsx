@@ -21,7 +21,7 @@ export default function ChatSidebar({
   selectedConversationId = "",
 }: ChatSidebarProps) {
   return (
-    <div className="w-72 border-r border-zinc-800 bg-[#0f0f10] flex flex-col h-screen">
+    <div className="w-full md:w-72 border-r border-zinc-800 bg-[#0f0f10] flex flex-col h-screen shrink-0">
       {/* Header */}
       <div className="p-6">
         <h1 className="text-2xl font-bold text-[#facc15] tracking-tight mb-6">IntelliFone</h1>

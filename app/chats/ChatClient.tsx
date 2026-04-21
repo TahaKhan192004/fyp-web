@@ -56,14 +56,14 @@ export default function ChatClient() {
   if (!currentUser) return null;
 
   return (
-    <div className="chat-page flex h-screen overflow-hidden">
-      <div className="w-1/3 border-r h-full overflow-y-auto">
+    <div className="chat-page flex h-screen overflow-hidden w-full">
+      <div className={`w-full md:w-1/3 border-r h-full overflow-y-auto ${activeConversation ? "hidden md:block" : "block"}`}>
         <Inbox
           currentUserId={currentUser.id}
           activeConversation={activeConversation || undefined}
         />
       </div>
-      <div className="w-2/3 h-full">
+      <div className={`w-full md:w-2/3 h-full flex flex-col ${!activeConversation ? "hidden md:flex" : "flex"}`}>
         <ChatWindow
           currentUserId={currentUser.id}
           conversationId={activeConversation}

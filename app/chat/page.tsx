@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import ChatSidebar from "../components/ChatSideBar";
@@ -77,19 +77,24 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex h-screen text-white bg-gray-900">
-      <ChatSidebar
-        onSelect={handleSelectConversation}
-        userId={userId}
-        conversations={conversations}
-        loading={loadingConvs}
-        selectedConversationId={selectedConversation}
-      />
-      <ChatWindow
-        userId={userId}
-        conversationId={selectedConversation}
-        onNewConversation={handleNewConversation}
-      />
+    <div className="flex h-screen text-white bg-gray-900 w-full overflow-hidden">
+      <div className={`${selectedConversation ? "hidden md:block" : "w-full md:w-auto md:block"}`}>
+        <ChatSidebar
+          onSelect={handleSelectConversation}
+          userId={userId}
+          conversations={conversations}
+          loading={loadingConvs}
+          selectedConversationId={selectedConversation}
+        />
+      </div>
+      <div className={`flex-1 flex flex-col h-full overflow-hidden ${!selectedConversation ? "hidden md:flex" : "flex"}`}>
+        <ChatWindow
+          userId={userId}
+          conversationId={selectedConversation}
+          onNewConversation={handleNewConversation}
+          onBack={() => setSelectedConversation("")}
+        />
+      </div>
     </div>
   );
 }

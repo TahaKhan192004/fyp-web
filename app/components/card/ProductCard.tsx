@@ -9,7 +9,7 @@ interface Phone {
   model: string;
   company?: string;
   ram?: string;
-  storage?: string;
+  storage?: string | number;
   pictures?: string[];
   condition_score?: number;
   description?: string;
