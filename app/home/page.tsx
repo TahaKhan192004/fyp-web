@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import ProductCard from '../components/card/ProductCard';
 import SearchBar from '../components/SearchBar';
-
+//hey
 const capabilityCards = [
   {
     title: 'AI Damage Detection',
