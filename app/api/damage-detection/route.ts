@@ -40,9 +40,11 @@ export async function POST(req: Request) {
       ai_detected: data.ai_detected
     });
   } catch (err) {
+    console.error('Damage detection error:', err);
     return NextResponse.json(
       { error: 'Server is busy, please try again later.' },
       { status: 500 }
     );
+    
   }
 }
