@@ -61,7 +61,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 text-xl font-bold shrink-0">
             <Smartphone className="text-[#f7f435]" />
-            <span className="text-[#f7f435]">IntelliFone</span>
+            <span className="text-[#f7f435] font-accent">IntelliFone</span>
           </Link>
 
           {/* Desktop Nav Links */}
@@ -232,7 +232,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <div>
               <div className="flex items-center gap-2 text-xl font-bold mb-4">
                 <Smartphone className="w-6 h-6 text-[#f7f435]" />
-                <span className="text-[#f7f435]">IntelliFone</span>
+                <span className="text-[#f7f435] font-accent">IntelliFone</span>
               </div>
               <p className="text-gray-400 text-sm">
                 Buy & sell used phones with confidence using AI-powered verification.

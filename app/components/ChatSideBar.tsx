@@ -24,7 +24,7 @@ export default function ChatSidebar({
     <div className="w-full md:w-72 border-r border-zinc-800 bg-[#0f0f10] flex flex-col h-screen shrink-0">
       {/* Header */}
       <div className="p-6">
-        <h1 className="text-2xl font-bold text-[#facc15] tracking-tight mb-6">IntelliFone</h1>
+        <h1 className="font-accent text-2xl font-bold text-[#facc15] tracking-tight mb-6">IntelliFone</h1>
         <button
           className="w-full bg-[#facc15] hover:bg-[#eab308] text-black font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-yellow-500/10"
           onClick={() => onSelect("")}

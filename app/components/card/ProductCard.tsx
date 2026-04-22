@@ -66,9 +66,9 @@ export default function ProductCard({ phone }: { phone: Phone }) {
       </div>
 
       <div className="p-4">
-        <h3 className="font-bold text-lg mb-2">{phone.model}</h3>
+        <h3 className="font-display font-bold text-lg mb-2">{phone.model}</h3>
         <div className="flex items-center justify-between mb-3">
-          <span className="text-[#f7f435] text-2xl font-bold">
+          <span className="font-metric text-[#f7f435] text-2xl font-bold">
             Rs. {phone.price?.toLocaleString()}
           </span>
           {phone.condition_score && (

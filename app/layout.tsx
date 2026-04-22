@@ -2,17 +2,17 @@
 import './globals.css'
 import type { ReactNode } from 'react'
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Instrument_Sans, Syne } from 'next/font/google'
 import ClientProviders from './ClientProvider';
 import AppShell from './ui/AppShell';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const instrumentSans = Instrument_Sans({
+  variable: "--font-instrument-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const syne = Syne({
+  variable: "--font-accent",
   subsets: ["latin"],
 });
 
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>
+      <body className={`${instrumentSans.variable} ${syne.variable}`}>
         <ClientProviders>
           <AppShell> {children}</AppShell>  
         </ClientProviders>
