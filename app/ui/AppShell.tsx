@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { supabase } from '../lib/supabaseClient';
-import { Smartphone, LogOut, Bookmark, MessageSquare, Inbox, UserCircle, Bot, Menu, X } from 'lucide-react';
+import { Smartphone, LogOut, Bookmark, MessageSquare, Inbox, UserCircle, Bot, Menu, X, TagIcon } from 'lucide-react';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<any>(null);
@@ -97,7 +97,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   <Bot className="w-4 h-4" />
                   <span>AI Chat</span>
                 </Link>
-
+                {/* Profile */}
+                
                 {/* Inbox */}
                 <Link
                   href="/chats"
@@ -199,6 +200,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   </Link>
                   <Link href="/chats" className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-300 hover:text-[#f7f435] hover:bg-[#f7f435]/10 transition-all">
                     <Inbox className="w-4 h-4" /> Inbox
+                  </Link>
+                  <Link href="/sell-phone" className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-300 hover:text-[#f7f435] hover:bg-[#f7f435]/10 transition-all">
+                    <TagIcon className="w-4 h-4" /> Get Price
                   </Link>
                   <Link href="/saved" className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-300 hover:text-[#f7f435] hover:bg-[#f7f435]/10 transition-all">
                     <Bookmark className="w-4 h-4" /> Saved

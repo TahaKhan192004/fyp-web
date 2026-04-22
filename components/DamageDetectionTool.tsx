@@ -48,11 +48,11 @@ export default function DamageDetectionTool() {
     const picked = Array.from(e.target.files ?? []);
     if (picked.length === 0) return;
 
-    const remaining = 6 - images.length;
+    const remaining = 2 - images.length;
     const allowed = picked.slice(0, Math.max(0, remaining));
 
     if (allowed.length < picked.length) {
-      setError('Maximum 6 images allowed.');
+      setError('Maximum 2 images allowed.');
     }
 
     const nextItems: ImageItem[] = allowed.map((file) => ({
@@ -74,7 +74,7 @@ export default function DamageDetectionTool() {
 
   const uploadImagesToSupabase = async () => {
     if (images.length === 0) throw new Error('Upload at least 1 image.');
-    if (images.length > 6) throw new Error('Maximum 6 images allowed.');
+    if (images.length > 2) throw new Error('Maximum 2 images allowed.');
 
     setUploading(true);
     try {

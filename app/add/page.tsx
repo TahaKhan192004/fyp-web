@@ -34,8 +34,8 @@ export default function SellPhone() {
   const uploadImages = async (e: any) => {
     const files = Array.from(e.target.files) as File[];
     if (files.length === 0) return;
-    if (images.length + files.length > 6) {
-      alert('You can upload max 6 images.');
+    if (images.length + files.length > 3) {
+      alert('You can upload max 2 images.');
       return;
     }
 
@@ -116,7 +116,7 @@ export default function SellPhone() {
           {/* IMAGE UPLOAD */}
           <div className="bg-gray-900/60 p-6 rounded-2xl border border-gray-700">
             <h2 className="text-xl font-bold mb-2">Upload Images</h2>
-            <p className="text-gray-400 text-sm mb-3">Upload up to 6 images</p>
+            <p className="text-gray-400 text-sm mb-3">Upload up to 2 images front and back </p>
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {images.map((url, idx) => (

@@ -3,6 +3,7 @@
 import React from 'react';
 import { Sparkles, Battery, Camera, Gamepad2, Star, TrendingUp } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
+import ReactMarkdown from 'react-markdown';
 
 export default function Recommendations() {
   const [budgetRange, setBudgetRange] = React.useState([80000, 150000]);
@@ -34,7 +35,7 @@ export default function Recommendations() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
 
-      setLoading(false); // first byte arrived — stop spinner, start writing
+      setLoading(false);
 
       let done = false;
       while (!done) {
@@ -42,7 +43,7 @@ export default function Recommendations() {
         done = streamDone;
         if (value) {
           const chunk = decoder.decode(value, { stream: true });
-          setAiResponse((prev) => prev + chunk.replace(/\*/g, ' '));
+          setAiResponse((prev) => prev + chunk);
         }
       }
     } catch (error) {
@@ -89,12 +90,8 @@ export default function Recommendations() {
                 step={10000}
                 value={budgetRange}
                 onValueChange={setBudgetRange}
-
               />
-              <div className="flex justify-between text-sm text-gray-400 mt-4"
-                   
-              >
-             
+              <div className="flex justify-between text-sm text-gray-400 mt-4">
                 <span>Rs. 10,000</span>
                 <span>Rs. 150,000</span>
               </div>
@@ -167,9 +164,53 @@ export default function Recommendations() {
                 Analyzing phones and generating recommendation...
               </p>
             ) : (
-              <p className="text-gray-300 whitespace-pre-line leading-relaxed">
-                {aiResponse}
-              </p>
+              <div className="text-gray-300 leading-relaxed prose prose-invert prose-sm max-w-none">
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => (
+                      <p className="mb-3 last:mb-0 text-gray-300">{children}</p>
+                    ),
+                    strong: ({ children }) => (
+                      <strong className="text-white font-semibold">{children}</strong>
+                    ),
+                    ul: ({ children }) => (
+                      <ul className="list-disc list-inside space-y-1 mb-3 text-gray-300">
+                        {children}
+                      </ul>
+                    ),
+                    ol: ({ children }) => (
+                      <ol className="list-decimal list-inside space-y-1 mb-3 text-gray-300">
+                        {children}
+                      </ol>
+                    ),
+                    li: ({ children }) => (
+                      <li className="text-gray-300">{children}</li>
+                    ),
+                    h1: ({ children }) => (
+                      <h1 className="text-2xl font-bold text-white mb-3 mt-4">{children}</h1>
+                    ),
+                    h2: ({ children }) => (
+                      <h2 className="text-xl font-bold text-white mb-2 mt-4">{children}</h2>
+                    ),
+                    h3: ({ children }) => (
+                      <h3 className="text-lg font-semibold text-white mb-2 mt-3">{children}</h3>
+                    ),
+                    code: ({ children }) => (
+                      <code className="bg-gray-900 text-[#f7f435] px-1.5 py-0.5 rounded text-xs font-mono">
+                        {children}
+                      </code>
+                    ),
+                    blockquote: ({ children }) => (
+                      <blockquote className="border-l-2 border-[#f7f435] pl-4 text-gray-400 italic my-3">
+                        {children}
+                      </blockquote>
+                    ),
+                    hr: () => <hr className="border-gray-700 my-4" />,
+                  }}
+                >
+                  {aiResponse}
+                </ReactMarkdown>
+              </div>
             )}
           </div>
         )}

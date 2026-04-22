@@ -26,8 +26,11 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
     }
   };
 
+  // Only auto-scroll on new messages if user hasn't scrolled up
   useEffect(() => {
-    scrollToBottom(false);
+    if (!userScrolledUp.current) {
+      scrollToBottom(false);
+    }
   }, [messages]);
 
   useEffect(() => {
@@ -64,6 +67,7 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
         console.error(err);
       }
       setLoading(false);
+      // Reset scroll lock when loading a new conversation
       userScrolledUp.current = false;
       setTimeout(() => scrollToBottom(true), 100);
     }
@@ -73,8 +77,9 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
   const sendMessage = async (msg: string) => {
     if (!msg.trim()) return;
 
-    userScrolledUp.current = false;
+    // ✅ Do NOT reset userScrolledUp here — let the user stay in control
     setMessages((prev) => [...prev, { role: "user", content: msg }]);
+    // Scroll to show the user's own sent message
     setTimeout(() => scrollToBottom(true), 50);
 
     setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
@@ -111,6 +116,10 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
             updated[updated.length - 1] = { role: "assistant", content: fullReply };
             return updated;
           });
+          // ✅ Only auto-scroll during streaming if user hasn't scrolled up
+          if (!userScrolledUp.current) {
+            messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+          }
         }
       }
 
@@ -154,12 +163,11 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
   ];
 
   return (
-    // height: 100dvh ensures it never exceeds the viewport on mobile too
     <div
       className="flex flex-col bg-[#09090b] text-zinc-100 overflow-hidden w-full"
       style={{ height: "100dvh" }}
     >
-      {/* Header — shrink-0 so it never compresses */}
+      {/* Header */}
       <div className="shrink-0 h-16 border-b border-zinc-800 flex items-center px-4 md:px-8 bg-[#09090b]/80 backdrop-blur-md z-10">
         <div className="flex items-center gap-3 w-full">
           {onBack && (
@@ -184,11 +192,7 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
         </div>
       </div>
 
-      {/* Message area
-          - flex: "1 1 0" + minHeight: 0 forces flexbox to constrain this div's
-            height so overflow-y-auto creates an internal scrollbar instead of
-            letting the page/window scroll.
-      */}
+      {/* Message area */}
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
@@ -313,7 +317,7 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input bar — shrink-0 so it never compresses */}
+      {/* Input bar */}
       <div className="shrink-0 p-4 md:p-6 lg:px-24 bg-gradient-to-t from-[#09090b] via-[#09090b] to-transparent">
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-2 focus-within:border-[#facc15]/50 transition-all shadow-2xl">
           <MessageInput onSend={sendMessage} disabled={isStreaming} />
