@@ -9,7 +9,9 @@ import { Smartphone, LogOut, Bookmark, MessageSquare, Inbox, UserCircle, Bot, Me
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<any>(null);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false);
   const pathname = usePathname();
+  const userMenuRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -28,7 +30,23 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   // Close mobile menu on route change
   React.useEffect(() => {
     setIsMenuOpen(false);
+    setIsUserMenuOpen(false);
   }, [pathname]);
+
+  React.useEffect(() => {
+    if (!isUserMenuOpen) return;
+
+    const handlePointerDown = (e: PointerEvent) => {
+      const el = userMenuRef.current;
+      if (!el) return;
+      if (e.target instanceof Node && !el.contains(e.target)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('pointerdown', handlePointerDown);
+    return () => window.removeEventListener('pointerdown', handlePointerDown);
+  }, [isUserMenuOpen]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -112,39 +130,76 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   <span>Inbox</span>
                 </Link>
 
-                {/* Saved */}
-                <Link
-                  href="/saved"
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                    isActive('/saved')
-                      ? 'bg-[#f7f435] text-black'
-                      : 'text-gray-300 hover:text-[#f7f435] hover:bg-[#f7f435]/10'
-                  }`}
-                >
-                  <Bookmark className="w-4 h-4" />
-                  <span>Saved</span>
-                </Link>
+                {/* User menu */}
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsUserMenuOpen((v) => !v)}
+                    aria-haspopup="menu"
+                    aria-expanded={isUserMenuOpen}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all text-gray-300 hover:text-[#f7f435] hover:bg-[#f7f435]/10"
+                  >
+                    <Menu className="w-4 h-4" />
+                    <span className="sr-only">Menu</span>
+                  </button>
 
-                {/* Profile */}
-                <Link
-                  href="/profile"
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                    isActive('/profile')
-                      ? 'bg-[#f7f435] text-black'
-                      : 'text-gray-300 hover:text-[#f7f435] hover:bg-[#f7f435]/10'
-                  }`}
-                >
-                  <UserCircle className="w-4 h-4" />
-                  <span>Profile</span>
-                </Link>
+                  {isUserMenuOpen && (
+                    <div
+                      role="menu"
+                      className="absolute right-0 mt-2 w-48 rounded-xl border border-gray-800 bg-[#0e0e10] shadow-xl overflow-hidden z-50"
+                    >
+                      <Link
+                        href="/sell-phone"
+                        role="menuitem"
+                        className={`flex items-center gap-2 px-3 py-2.5 text-sm font-medium transition-all ${
+                          isActive('/sell-phone')
+                            ? 'bg-[#f7f435] text-black'
+                            : 'text-gray-300 hover:text-[#f7f435] hover:bg-[#f7f435]/10'
+                        }`}
+                      >
+                        <TagIcon className="w-4 h-4" />
+                        <span>Get Price</span>
+                      </Link>
 
-                {/* Logout */}
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-400/10 transition-all"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
+                      <Link
+                        href="/saved"
+                        role="menuitem"
+                        className={`flex items-center gap-2 px-3 py-2.5 text-sm font-medium transition-all ${
+                          isActive('/saved')
+                            ? 'bg-[#f7f435] text-black'
+                            : 'text-gray-300 hover:text-[#f7f435] hover:bg-[#f7f435]/10'
+                        }`}
+                      >
+                        <Bookmark className="w-4 h-4" />
+                        <span>Saved</span>
+                      </Link>
+
+                      <Link
+                        href="/profile"
+                        role="menuitem"
+                        className={`flex items-center gap-2 px-3 py-2.5 text-sm font-medium transition-all ${
+                          isActive('/profile')
+                            ? 'bg-[#f7f435] text-black'
+                            : 'text-gray-300 hover:text-[#f7f435] hover:bg-[#f7f435]/10'
+                        }`}
+                      >
+                        <UserCircle className="w-4 h-4" />
+                        <span>Profile</span>
+                      </Link>
+
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-gray-400 hover:text-red-400 hover:bg-red-400/10 transition-all w-full text-left"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Logout</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
               </>
             ) : (
               <>
