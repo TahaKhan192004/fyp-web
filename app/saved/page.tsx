@@ -71,7 +71,7 @@ export default function SavedPhonesPage() {
 
               <div className="flex gap-3 pt-3">
                 <Link
-                  href={`/product/${phone.id}`}
+                  href={`/phones/${phone.id}`}
                   className="flex-1 text-center px-4 py-2 rounded-lg bg-[#f7f435] text-black font-semibold hover:opacity-90"
                 >
                   View

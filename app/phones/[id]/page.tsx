@@ -28,7 +28,7 @@ interface Phone {
   uuid:string
   user_id: string;
   model: string;
-  brand: string;
+  company: string;
   storage?: string;
   ram?: string;
   price: number;
@@ -107,7 +107,7 @@ export default function ProductDetailPage() {
 
         console.log('Fetching seller info for user ID:', phone.user_id);
         const data = await res.json();
-        setSellerName(data.username || 'Unknown Seller');
+        setSellerName(data.full_name || 'Unknown Seller');
         setSellerEmail(data.email || 'No Email');
       } catch (err) {
         console.error(err);
@@ -223,7 +223,7 @@ async function handleContact(receiverId: string) {
   const similarPhones = phones
     .filter(
       (p) =>
-        p.brand === phone.brand &&
+        p.company === phone.company&&
         p.id !== phone.id &&
         p.status === 'active'
     )
@@ -315,7 +315,7 @@ async function handleContact(receiverId: string) {
             <div className="flex gap-4 text-sm text-gray-400">
               <span>RAM: {phone.ram} GB</span>
               <span>Storage: {phone.storage} GB</span>
-              <span>{phone.brand}</span>
+              <span>{phone.company}</span>
             </div>
 
             <div className="text-4xl font-bold text-[#f7f435]">

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import ChatSidebar from "../components/ChatSideBar";
@@ -17,7 +17,9 @@ export default function ChatPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loadingConvs, setLoadingConvs] = useState(false);
 
-  // 1️⃣ Get current user
+  // Mobile: track which panel is visible
+  const [mobileView, setMobileView] = useState<"sidebar" | "chat">("sidebar");
+
   useEffect(() => {
     async function fetchUser() {
       const { data } = await supabase.auth.getUser();
@@ -26,7 +28,6 @@ export default function ChatPage() {
     fetchUser();
   }, []);
 
-  // 2️⃣ Fetch conversations from MongoDB via FastAPI
   const fetchConversations = async (uid: string) => {
     if (!uid) return;
     setLoadingConvs(true);
@@ -53,32 +54,39 @@ export default function ChatPage() {
     if (userId) fetchConversations(userId);
   }, [userId]);
 
-  // 3️⃣ Handle conversation selection or new chat
+  // Selecting a conversation OR clicking New Chat both open the chat panel on mobile
   const handleSelectConversation = async (mongoId: string) => {
-    if (!mongoId) {
-      // New chat — clear selection
-      setSelectedConversation("");
-      return;
-    }
     setSelectedConversation(mongoId);
+    setMobileView("chat"); // always switch to chat on mobile
 
-    // Optimistically add to sidebar if not already present
-    setConversations((prev) => {
-      if (prev.some((c) => c.mongo_conversation_id === mongoId)) return prev;
-      return [{ id: mongoId, mongo_conversation_id: mongoId }, ...prev];
-    });
+    if (mongoId) {
+      setConversations((prev) => {
+        if (prev.some((c) => c.mongo_conversation_id === mongoId)) return prev;
+        return [{ id: mongoId, mongo_conversation_id: mongoId }, ...prev];
+      });
+    }
   };
 
-  // 4️⃣ Called by ChatWindow after a new conversation is created via streaming
   const handleNewConversation = async (mongoId: string) => {
     setSelectedConversation(mongoId);
-    // Re-fetch so we get the real title from MongoDB
+    setMobileView("chat");
     await fetchConversations(userId);
+  };
+
+  // Back button in ChatWindow header returns to sidebar on mobile
+  const handleBack = () => {
+    setMobileView("sidebar");
   };
 
   return (
     <div className="flex h-screen text-white bg-gray-900 w-full overflow-hidden">
-      <div className={`${selectedConversation ? "hidden md:block" : "w-full md:w-auto md:block"}`}>
+      {/* Sidebar */}
+      <div
+        className={[
+          "shrink-0 md:w-72",
+          mobileView === "sidebar" ? "w-full block" : "hidden md:block",
+        ].join(" ")}
+      >
         <ChatSidebar
           onSelect={handleSelectConversation}
           userId={userId}
@@ -87,12 +95,19 @@ export default function ChatPage() {
           selectedConversationId={selectedConversation}
         />
       </div>
-      <div className={`flex-1 flex flex-col h-full overflow-hidden ${!selectedConversation ? "hidden md:flex" : "flex"}`}>
+
+      {/* Chat window */}
+      <div
+        className={[
+          "flex-1 flex flex-col h-full overflow-hidden",
+          mobileView === "chat" ? "flex w-full" : "hidden md:flex",
+        ].join(" ")}
+      >
         <ChatWindow
           userId={userId}
           conversationId={selectedConversation}
           onNewConversation={handleNewConversation}
-          onBack={() => setSelectedConversation("")}
+          onBack={handleBack}
         />
       </div>
     </div>

@@ -26,7 +26,7 @@ export default function Home() {
 
       const data = await res.json();
 
-      if (mounted) {
+      if (mounted1) {
         setPhones(data); // assuming API returns an array
       }
     } catch (err) {
