@@ -187,19 +187,19 @@ export default function Home() {
 
   return (
     <div className="min-h-screen pb-12">
-      <section className="relative overflow-hidden pt-8">
+      <section className="relative overflow-hidden pt-2 md:pt-4">
         <div className="absolute inset-x-0 top-0 h-[34rem] bg-[radial-gradient(circle_at_top,rgba(247,244,53,0.12),transparent_45%)]" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 md:py-20 relative z-10">
-          <div className="grid lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)] gap-10 lg:gap-14 items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 md:pt-14 md:pb-20 relative z-10">
+          <div className="grid lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)] gap-8 lg:gap-14 items-start lg:items-center">
             <div className="animate-fade-up">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-gray-300 mb-6 backdrop-blur">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-gray-300 mb-4 backdrop-blur">
                 <Sparkles className="w-4 h-4 text-[#f7f435]" />
                 AI marketplace, verification, pricing, and chat in one flow
               </div>
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-[4.15rem] font-bold mb-5 leading-[0.98] max-w-[12ch]">
+              <h1 className="font-display text-[2.7rem] sm:text-5xl lg:text-[4.15rem] font-bold mb-4 leading-[0.98] max-w-[12ch]">
                 Buy & Sell Used Phones <span className="text-[#f7f435] font-accent">with Confidence</span>
               </h1>
-              <p className="text-lg md:text-xl text-gray-400 mb-8 max-w-2xl">
+              <p className="text-base md:text-xl text-gray-400 mb-6 max-w-2xl">
                 AI-powered verification ensures every phone is checked, graded, and guaranteed. Trade smarter with IntelliFone.
               </p>
               <div className="flex flex-wrap gap-4 animate-fade-up-delay">
@@ -219,7 +219,7 @@ export default function Home() {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-10 animate-fade-up-delay-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8 animate-fade-up-delay-2">
                 <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 backdrop-blur">
                   <div className="font-metric text-2xl text-white">{featuredCount}+</div>
                   <div className="text-xs text-gray-400 uppercase tracking-[0.18em] mt-1">Live Listings</div>
@@ -239,7 +239,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="relative flex items-center justify-center p-3 md:p-6 animate-fade-up-delay">
+            <div className="relative flex items-start lg:items-center justify-center p-2 md:p-6 animate-fade-up-delay">
               <div className="absolute inset-0 bg-gradient-to-br from-[#f7f435]/20 via-black to-black rounded-[2.5rem] blur-3xl"></div>
               <div className="absolute left-2 top-8 h-24 w-24 rounded-full bg-[#f7f435]/12 blur-2xl"></div>
               <div className="absolute right-4 bottom-8 h-28 w-28 rounded-full bg-sky-400/10 blur-3xl"></div>
@@ -274,7 +274,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 md:-mt-4 relative z-20">
         <SearchBar onSearch={handleSearch} />
       </section>
 
