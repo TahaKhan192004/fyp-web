@@ -71,8 +71,6 @@ export default function Marketplace() {
     queryKey: ["marketplace-phones"],
     queryFn: async () => {
       const res = await fetch("/api/phones/list");
-      const data = await res.json();
-      console.log("API returned:", data.length, data);
       return res.json();
     },
   });
