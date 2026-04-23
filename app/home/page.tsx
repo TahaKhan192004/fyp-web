@@ -187,11 +187,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen pb-12">
-      <section className="relative overflow-hidden pt-2 md:pt-4">
+      <section className="relative overflow-hidden pt-0">
         <div className="absolute inset-x-0 top-0 h-[34rem] bg-[radial-gradient(circle_at_top,rgba(247,244,53,0.12),transparent_45%)]" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-12 md:pt-14 md:pb-20 relative z-10">
-          <div className="grid lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)] gap-8 lg:gap-14 items-start lg:items-center">
-            <div className="animate-fade-up">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-12 md:pt-8 md:pb-20 relative z-10">
+          <div className="grid lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.92fr)] gap-8 lg:gap-14 items-start">
+            <div className="animate-fade-up lg:pt-4 self-start">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-gray-300 mb-4 backdrop-blur">
                 <Sparkles className="w-4 h-4 text-[#f7f435]" />
                 AI marketplace, verification, pricing, and chat in one flow
@@ -239,19 +239,19 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="relative flex items-start lg:items-center justify-center p-2 md:p-6 animate-fade-up-delay">
+            <div className="relative flex items-start justify-center pt-2 md:pt-4 lg:pt-0 p-2 md:p-6 animate-fade-up-delay">
               <div className="absolute inset-0 bg-gradient-to-br from-[#f7f435]/20 via-black to-black rounded-[2.5rem] blur-3xl"></div>
               <div className="absolute left-2 top-8 h-24 w-24 rounded-full bg-[#f7f435]/12 blur-2xl"></div>
               <div className="absolute right-4 bottom-8 h-28 w-28 rounded-full bg-sky-400/10 blur-3xl"></div>
               <div className="relative w-full max-w-[320px] animate-float-soft">
                 <div className="absolute -inset-4 rounded-[2.75rem] bg-[#f7f435]/10 blur-2xl"></div>
-                <div className="absolute left-3 top-4 z-20 hidden md:flex max-w-[220px] rounded-2xl border border-white/10 bg-[#09111b]/88 px-4 py-3 backdrop-blur animate-pulse-glow shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
+                <div className="absolute -left-28 top-12 z-20 hidden xl:flex max-w-[220px] rounded-2xl border border-white/10 bg-[#09111b]/88 px-4 py-3 backdrop-blur animate-pulse-glow shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
                   <div>
                     <div className="text-[11px] uppercase tracking-[0.18em] text-gray-400">Verification</div>
                     <div className="mt-1 font-semibold text-white">Condition, price, and report</div>
                   </div>
                 </div>
-                <div className="absolute right-3 bottom-6 z-20 hidden md:flex max-w-[240px] items-center gap-3 rounded-2xl border border-white/10 bg-[#09111b]/88 px-4 py-3 backdrop-blur shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
+                <div className="absolute -right-32 bottom-20 z-20 hidden xl:flex max-w-[240px] items-center gap-3 rounded-2xl border border-white/10 bg-[#09111b]/88 px-4 py-3 backdrop-blur shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
                   <Bot className="w-5 h-5 text-[#f7f435]" />
                   <div>
                     <div className="text-xs text-gray-400">AI assistant</div>
