@@ -56,6 +56,51 @@ button,
   font-family: var(--font-display);
 }
 
+@layer base {
+  button,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"] {
+    @apply transition-[transform,box-shadow,background-color,border-color,color,opacity] duration-200 ease-out;
+  }
+
+  @media (hover: hover) {
+    button:not(:disabled):not([aria-disabled="true"]):hover,
+    input[type="button"]:not(:disabled):hover,
+    input[type="submit"]:not(:disabled):hover,
+    input[type="reset"]:not(:disabled):hover {
+      @apply -translate-y-0.5 shadow-lg shadow-black/20;
+    }
+
+    button:not(:disabled):not([aria-disabled="true"]):active,
+    input[type="button"]:not(:disabled):active,
+    input[type="submit"]:not(:disabled):active,
+    input[type="reset"]:not(:disabled):active {
+      @apply translate-y-0 shadow-md shadow-black/20;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    button,
+    input[type="button"],
+    input[type="submit"],
+    input[type="reset"] {
+      transition-duration: 0ms;
+    }
+
+    button:not(:disabled):not([aria-disabled="true"]):hover,
+    button:not(:disabled):not([aria-disabled="true"]):active,
+    input[type="button"]:not(:disabled):hover,
+    input[type="button"]:not(:disabled):active,
+    input[type="submit"]:not(:disabled):hover,
+    input[type="submit"]:not(:disabled):active,
+    input[type="reset"]:not(:disabled):hover,
+    input[type="reset"]:not(:disabled):active {
+      transform: none;
+    }
+  }
+}
+
 .font-accent {
   font-family: var(--font-accent), var(--font-display);
   letter-spacing: -0.04em;

@@ -86,14 +86,14 @@ export default function Recommendations() {
             <div className="bg-gray-900 rounded-xl p-6 border border-gray-800">
               <Slider
                 min={10000}
-                max={150000}
+                max={300000}
                 step={10000}
                 value={budgetRange}
                 onValueChange={setBudgetRange}
               />
               <div className="flex justify-between text-sm text-gray-400 mt-4">
                 <span>Rs. 10,000</span>
-                <span>Rs. 150,000</span>
+                <span>Rs. 300,000</span>
               </div>
             </div>
           </div>

@@ -24,63 +24,61 @@ function safeFileName(name: string) {
 }
 
 export default function DamageDetectionTool() {
-  const [images, setImages] = React.useState<ImageItem[]>([]);
+  const [frontImage, setFrontImage] = React.useState<ImageItem | null>(null);
+  const [backImage, setBackImage] = React.useState<ImageItem | null>(null);
+  const frontInputRef = React.useRef<HTMLInputElement>(null);
+  const backInputRef = React.useRef<HTMLInputElement>(null);
+
   const [uploading, setUploading] = React.useState(false);
   const [analyzing, setAnalyzing] = React.useState(false);
   const [result, setResult] = React.useState<DamageDetectionResponse | null>(null);
   const [error, setError] = React.useState<string | null>(null);
-  const imagesRef = React.useRef<ImageItem[]>([]);
 
-  React.useEffect(() => {
-    imagesRef.current = images;
-  }, [images]);
-
+  // Revoke object URLs on unmount
   React.useEffect(() => {
     return () => {
-      for (const img of imagesRef.current) URL.revokeObjectURL(img.previewUrl);
+      if (frontImage) URL.revokeObjectURL(frontImage.previewUrl);
+      if (backImage) URL.revokeObjectURL(backImage.previewUrl);
     };
   }, []);
 
-  const onPickFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (side: 'front' | 'back', e: React.ChangeEvent<HTMLInputElement>) => {
     setError(null);
     setResult(null);
-
-    const picked = Array.from(e.target.files ?? []);
-    if (picked.length === 0) return;
-
-    const remaining = 2 - images.length;
-    const allowed = picked.slice(0, Math.max(0, remaining));
-
-    if (allowed.length < picked.length) {
-      setError('Maximum 2 images allowed.');
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const previewUrl = URL.createObjectURL(file);
+    if (side === 'front') {
+      if (frontImage) URL.revokeObjectURL(frontImage.previewUrl);
+      setFrontImage({ file, previewUrl });
+    } else {
+      if (backImage) URL.revokeObjectURL(backImage.previewUrl);
+      setBackImage({ file, previewUrl });
     }
-
-    const nextItems: ImageItem[] = allowed.map((file) => ({
-      file,
-      previewUrl: URL.createObjectURL(file),
-    }));
-
-    setImages((prev) => [...prev, ...nextItems]);
     e.target.value = '';
   };
 
-  const removeImage = (index: number) => {
-    setImages((prev) => {
-      const item = prev[index];
-      if (item) URL.revokeObjectURL(item.previewUrl);
-      return prev.filter((_, i) => i !== index);
-    });
+  const removeImage = (side: 'front' | 'back') => {
+    if (side === 'front') {
+      if (frontImage) URL.revokeObjectURL(frontImage.previewUrl);
+      setFrontImage(null);
+      if (frontInputRef.current) frontInputRef.current.value = '';
+    } else {
+      if (backImage) URL.revokeObjectURL(backImage.previewUrl);
+      setBackImage(null);
+      if (backInputRef.current) backInputRef.current.value = '';
+    }
   };
 
   const uploadImagesToSupabase = async () => {
-    if (images.length === 0) throw new Error('Upload at least 1 image.');
-    if (images.length > 2) throw new Error('Maximum 2 images allowed.');
+    const imagesToUpload = [frontImage, backImage].filter(Boolean) as ImageItem[];
+    if (imagesToUpload.length === 0) throw new Error('Upload at least 1 image.');
 
     setUploading(true);
     try {
       const urls: string[] = [];
 
-      for (const { file } of images) {
+      for (const { file } of imagesToUpload) {
         const rand =
           typeof crypto !== 'undefined' && 'randomUUID' in crypto
             ? crypto.randomUUID()
@@ -135,6 +133,8 @@ export default function DamageDetectionTool() {
 
   const pdfUrl = result?.pdf_url;
   const aiDetected = result?.ai_detected && typeof result.ai_detected === 'object' ? result.ai_detected : null;
+  const isDisabled = uploading || analyzing;
+  const canAnalyze = (frontImage || backImage) && !isDisabled;
 
   return (
     <div className="min-h-screen py-8 px-4 text-white">
@@ -142,32 +142,55 @@ export default function DamageDetectionTool() {
         <div className="space-y-1">
           <h1 className="text-3xl font-bold">AI Damage Detection</h1>
           <p className="text-gray-400 text-sm">
-            Upload up to 6 images (front, back, left, right, top, bottom). The system uploads them and generates a PDF report.
+            Upload front and/or back images. The system uploads them and generates a PDF report.
           </p>
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <label className="inline-flex items-center justify-center px-4 py-2 rounded-xl border border-gray-700 bg-black/30 hover:bg-black/50 transition cursor-pointer">
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={onPickFiles}
-                disabled={uploading || analyzing || images.length >= 6}
-              />
-              <span className="text-sm font-semibold">Select images</span>
-            </label>
 
-            <button
-              type="button"
-              onClick={analyze}
-              disabled={images.length === 0 || uploading || analyzing}
-              className="px-4 py-2 rounded-xl font-bold bg-[#f7f435] text-black disabled:opacity-60"
-            >
-              {uploading ? 'Uploading...' : analyzing ? 'Analyzing...' : 'Upload & Analyze'}
-            </button>
+          {/* Separate Front / Back upload slots */}
+          <div className="grid grid-cols-2 gap-4">
+            {(['front', 'back'] as const).map((side) => {
+              const image = side === 'front' ? frontImage : backImage;
+              const inputRef = side === 'front' ? frontInputRef : backInputRef;
+
+              return (
+                <div key={side} className="space-y-2">
+                  <p className="text-sm font-semibold capitalize text-gray-300">{side}</p>
+
+                  {image ? (
+                    <div className="relative rounded-xl overflow-hidden aspect-square">
+                      <img
+                        src={image.previewUrl}
+                        alt={side}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(side)}
+                        disabled={isDisabled}
+                        className="absolute top-2 right-2 bg-black/70 hover:bg-black px-2 py-1 rounded-lg text-xs border border-gray-700 disabled:opacity-50"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <label className={`border-2 border-dashed border-gray-700 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-yellow-400 transition aspect-square ${isDisabled ? 'opacity-50 pointer-events-none' : ''}`}>
+                      <span className="text-3xl text-gray-400 mb-2">📷</span>
+                      <span className="text-sm text-gray-400">Click to upload</span>
+                      <input
+                        ref={inputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleImageChange(side, e)}
+                        disabled={isDisabled}
+                      />
+                    </label>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           {error && (
@@ -176,23 +199,16 @@ export default function DamageDetectionTool() {
             </div>
           )}
 
-          {images.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {images.map((img, idx) => (
-                <div key={img.previewUrl} className="relative rounded-xl overflow-hidden border border-gray-800">
-                  <img src={img.previewUrl} alt={`Upload ${idx + 1}`} className="w-full h-40 object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(idx)}
-                    className="absolute top-2 right-2 bg-black/70 hover:bg-black px-2 py-1 rounded-lg text-xs border border-gray-700"
-                    disabled={uploading || analyzing}
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={analyze}
+              disabled={!canAnalyze}
+              className="px-4 py-2 rounded-xl font-bold bg-[#f7f435] text-black disabled:opacity-60"
+            >
+              {uploading ? 'Uploading...' : analyzing ? 'Analyzing...' : 'Upload & Analyze'}
+            </button>
+          </div>
         </div>
 
         {result && (
