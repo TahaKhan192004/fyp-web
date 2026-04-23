@@ -5,6 +5,7 @@ export async function GET() {
     .from("mobile_phones")
     .select("*")
     .order("created_at", { ascending: false });
+    
 
   if (error) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });

@@ -65,12 +65,14 @@ export default function Marketplace() {
   const [filters, setFilters] = React.useState(DEFAULT_FILTERS);
   const [currentPage, setCurrentPage] = React.useState(1);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
-  const itemsPerPage = 12;
+  const itemsPerPage = 1000;
 
   const { data: allPhones = [], isLoading } = useQuery<Phone[]>({
     queryKey: ["marketplace-phones"],
     queryFn: async () => {
       const res = await fetch("/api/phones/list");
+      const data = await res.json();
+      console.log("API returned:", data.length, data);
       return res.json();
     },
   });
