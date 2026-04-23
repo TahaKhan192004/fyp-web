@@ -245,20 +245,20 @@ export default function Home() {
               <div className="absolute right-4 bottom-8 h-28 w-28 rounded-full bg-sky-400/10 blur-3xl"></div>
               <div className="relative w-full max-w-[320px] animate-float-soft">
                 <div className="absolute -inset-4 rounded-[2.75rem] bg-[#f7f435]/10 blur-2xl"></div>
-                <div className="absolute -left-10 top-14 hidden md:flex rounded-2xl border border-white/10 bg-[#09111b]/85 px-4 py-3 backdrop-blur animate-pulse-glow">
+                <div className="absolute left-3 top-4 z-20 hidden md:flex max-w-[220px] rounded-2xl border border-white/10 bg-[#09111b]/88 px-4 py-3 backdrop-blur animate-pulse-glow shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
                   <div>
                     <div className="text-[11px] uppercase tracking-[0.18em] text-gray-400">Verification</div>
                     <div className="mt-1 font-semibold text-white">Condition, price, and report</div>
                   </div>
                 </div>
-                <div className="absolute -right-8 bottom-16 hidden md:flex items-center gap-3 rounded-2xl border border-white/10 bg-[#09111b]/85 px-4 py-3 backdrop-blur">
+                <div className="absolute right-3 bottom-6 z-20 hidden md:flex max-w-[240px] items-center gap-3 rounded-2xl border border-white/10 bg-[#09111b]/88 px-4 py-3 backdrop-blur shadow-[0_18px_40px_rgba(0,0,0,0.35)]">
                   <Bot className="w-5 h-5 text-[#f7f435]" />
                   <div>
                     <div className="text-xs text-gray-400">AI assistant</div>
                     <div className="text-sm font-semibold text-white">Recommendations on demand</div>
                   </div>
                 </div>
-                <div className="relative overflow-hidden rounded-[2.4rem] border border-white/10 bg-[#05090f] shadow-[0_24px_70px_rgba(0,0,0,0.52)]">
+                <div className="relative z-10 overflow-hidden rounded-[2.4rem] border border-white/10 bg-[#05090f] shadow-[0_24px_70px_rgba(0,0,0,0.52)]">
                   <Image
                     src="/hero-mobile-ui.png"
                     alt="IntelliFone mobile app interface preview"
