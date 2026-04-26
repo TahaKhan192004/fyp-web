@@ -1,5 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+
 interface Conversation {
   id: string;
   mongo_conversation_id: string;
@@ -20,11 +23,28 @@ export default function ChatSidebar({
   loading = false,
   selectedConversationId = "",
 }: ChatSidebarProps) {
+  const router = useRouter();
+
   return (
     <div className="w-full md:w-72 border-r border-zinc-800 bg-[#0f0f10] flex flex-col h-screen shrink-0">
       {/* Header */}
-      <div className="p-6">
-        <h1 className="font-accent text-2xl font-bold text-[#facc15] tracking-tight mb-6">IntelliFone</h1>
+      <div className="p-4 space-y-4">
+
+        {/* Back button + logo */}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push("/")}
+            className="group flex items-center justify-center w-8 h-8 rounded-lg border border-zinc-700 hover:border-zinc-500 hover:bg-zinc-800 transition-all"
+            aria-label="Back to home"
+          >
+            <ArrowLeft className="w-4 h-4 text-zinc-400 group-hover:text-white transition-colors" />
+          </button>
+          <span className="text-[#facc15] font-accent text-lg font-bold tracking-tight">
+            IntelliFone
+          </span>
+        </div>
+
+        {/* New Chat */}
         <button
           className="w-full bg-[#facc15] hover:bg-[#eab308] text-black font-bold py-3 px-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-yellow-500/10"
           onClick={() => onSelect("")}

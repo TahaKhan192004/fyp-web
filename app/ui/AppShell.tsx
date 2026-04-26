@@ -6,12 +6,18 @@ import { usePathname } from 'next/navigation';
 import { supabase } from '../lib/supabaseClient';
 import { Smartphone, LogOut, Bookmark, MessageSquare, Inbox, UserCircle, Bot, Menu, X, TagIcon } from 'lucide-react';
 
+// Routes that should be full-screen (no navbar/footer)
+const FULLSCREEN_ROUTES = ['/chat'];
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<any>(null);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false);
   const pathname = usePathname();
   const userMenuRef = React.useRef<HTMLDivElement | null>(null);
+
+  // Hide chrome on full-screen routes
+  const isFullscreen = FULLSCREEN_ROUTES.some((r) => pathname.startsWith(r));
 
   React.useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -64,6 +70,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const isActive = (href: string) => pathname === href;
 
+  // Full-screen layout — no navbar, no footer, children fill viewport
+  if (isFullscreen) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Header */}
@@ -115,8 +126,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                   <Bot className="w-4 h-4" />
                   <span>AI Chat</span>
                 </Link>
-                {/* Profile */}
-                
+
                 {/* Inbox */}
                 <Link
                   href="/chats"
@@ -199,7 +209,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                     </div>
                   )}
                 </div>
-
               </>
             ) : (
               <>
@@ -306,7 +315,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 <Link href="/marketplace">Marketplace</Link>
                 <Link href="/add">Sell Phone</Link>
                 <Link href="/about">About Us</Link>
-               
               </div>
             </div>
 

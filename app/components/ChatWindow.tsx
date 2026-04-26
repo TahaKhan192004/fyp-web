@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import MessageInput from "./MessageInput";
 import { ArrowLeft } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -9,30 +9,46 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
   const [loading, setLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const userScrolledUp = useRef(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleScroll = () => {
+  // true  = user is at/near bottom → follow new content
+  // false = user scrolled up      → leave them alone
+  const isNearBottom = useRef(true);
+  // Single pending RAF handle — prevents stacking scroll frames
+  const rafRef = useRef<number | null>(null);
+
+  /* ─── Track whether user is near bottom ─── */
+  const handleScroll = useCallback(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
-    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-    userScrolledUp.current = distanceFromBottom > 100;
-  };
+    const dist = el.scrollHeight - el.scrollTop - el.clientHeight;
+    isNearBottom.current = dist < 100;
+  }, []);
 
-  const scrollToBottom = (force = false) => {
-    if (force || !userScrolledUp.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: force ? "smooth" : "instant" });
-    }
-  };
+  /* ─── Schedule ONE scroll per animation frame ─── */
+  const scheduleScroll = useCallback((force = false) => {
+    if (!force && !isNearBottom.current) return; // scrolled up — do nothing
+    if (rafRef.current !== null) return;          // already queued — skip
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+    });
+  }, []);
 
-  // Only auto-scroll on new messages if user hasn't scrolled up
+  /* ─── Auto-scroll whenever messages update (batched by React) ─── */
   useEffect(() => {
-    if (!userScrolledUp.current) {
-      scrollToBottom(false);
-    }
-  }, [messages]);
+    scheduleScroll();
+  }, [messages, scheduleScroll]);
 
+  /* ─── Cleanup on unmount ─── */
+  useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
+
+  /* ─── Fetch history ─── */
   useEffect(() => {
     async function fetchMessages() {
       if (!conversationId) return setMessages([]);
@@ -65,22 +81,23 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
         setMessages(normalized as any[]);
       } catch (err) {
         console.error(err);
+      } finally {
+        setLoading(false);
+        isNearBottom.current = true;
+        setTimeout(() => scheduleScroll(true), 120);
       }
-      setLoading(false);
-      // Reset scroll lock when loading a new conversation
-      userScrolledUp.current = false;
-      setTimeout(() => scrollToBottom(true), 100);
     }
     fetchMessages();
   }, [conversationId]);
 
+  /* ─── Send message ─── */
   const sendMessage = async (msg: string) => {
     if (!msg.trim()) return;
 
-    // ✅ Do NOT reset userScrolledUp here — let the user stay in control
+    // Force-follow when the user sends
+    isNearBottom.current = true;
     setMessages((prev) => [...prev, { role: "user", content: msg }]);
-    // Scroll to show the user's own sent message
-    setTimeout(() => scrollToBottom(true), 50);
+    setTimeout(() => scheduleScroll(true), 50);
 
     setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
     setIsStreaming(true);
@@ -105,23 +122,40 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
       let fullReply = "";
       let done = false;
 
+      // pendingFlush prevents stacking requestAnimationFrame setState calls
+      // Only one flush is queued at a time; the while-loop keeps accumulating
+      // into fullReply so no chunks are lost.
+      let pendingFlush = false;
+
       while (!done) {
         const { value, done: streamDone } = await reader.read();
         done = streamDone;
+
         if (value) {
-          const chunk = decoder.decode(value, { stream: true });
-          fullReply += chunk;
-          setMessages((prev) => {
-            const updated = [...prev];
-            updated[updated.length - 1] = { role: "assistant", content: fullReply };
-            return updated;
-          });
-          // ✅ Only auto-scroll during streaming if user hasn't scrolled up
-          if (!userScrolledUp.current) {
-            messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+          fullReply += decoder.decode(value, { stream: true });
+
+          if (!pendingFlush) {
+            pendingFlush = true;
+            requestAnimationFrame(() => {
+              pendingFlush = false;
+              // Capture fullReply in closure — always gets latest value
+              setMessages((prev) => {
+                const updated = [...prev];
+                updated[updated.length - 1] = { role: "assistant", content: fullReply };
+                return updated;
+              });
+              // scheduleScroll is triggered via the useEffect on messages
+            });
           }
         }
       }
+
+      // Final flush — ensures the last chunk is never dropped
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[updated.length - 1] = { role: "assistant", content: fullReply };
+        return updated;
+      });
 
       if (isNewConversation && onNewConversation) {
         try {
@@ -140,10 +174,8 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
           /* non-fatal */
         }
       }
-      setIsStreaming(false);
     } catch (err) {
       console.error(err);
-      setIsStreaming(false);
       setMessages((prev) => {
         const updated = [...prev];
         updated[updated.length - 1] = {
@@ -152,6 +184,8 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
         };
         return updated;
       });
+    } finally {
+      setIsStreaming(false);
     }
   };
 

@@ -16,6 +16,8 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
+  Sparkles,
+  X,
 } from 'lucide-react';
 import { getOrCreateConversation } from '@/app/lib/chatService';
 import { SupabaseClient } from '@supabase/supabase-js';
@@ -25,7 +27,7 @@ import { supabase } from '@/app/lib/supabaseClient';
 /* 🔹 Phone Schema */
 interface Phone {
   id: string;
-  uuid:string
+  uuid: string;
   user_id: string;
   model: string;
   company: string;
@@ -38,8 +40,14 @@ interface Phone {
   condition_score?: number;
   status?: string;
   damage_report_pdf?: string;
+  pta_status?: 'approved' | 'not-approved';
   sensor_diagnostics_result?: unknown;
   'sensor-diagnostics-result'?: unknown;
+}
+
+interface PricePredictionResult {
+  min_price: number;
+  max_price: number;
 }
 
 function getSensorDiagnostics(phone: Phone): unknown[] {
@@ -66,6 +74,185 @@ function formatPrimitive(value: unknown) {
   return null;
 }
 
+/* 🔹 Price Prediction Modal */
+function PricePredictionModal({
+  phone,
+  onClose,
+}: {
+  phone: Phone;
+  onClose: () => void;
+}) {
+  const [screenCrack, setScreenCrack] = useState(false);
+  const [panelDot, setPanelDot] = useState(false);
+  const [panelLine, setPanelLine] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<PricePredictionResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handlePredict = async () => {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+
+    try {
+      const fd = new FormData();
+      fd.append('brand', phone.company ?? '');
+      fd.append('model', phone.model ?? '');
+      fd.append('ram', phone.ram ?? '');
+      fd.append('storage', phone.storage ?? '');
+      fd.append('condition_score', String(phone.condition_score ?? 10));
+      // 2. Clean up the conversion (in both places in the modal)
+      const ptaApproved = phone.pta_status === 'approved';
+      fd.append('pta_approved', ptaApproved ? 'true' : 'false');
+    
+
+      // User-selected flags
+      fd.append('screen_crack', String(screenCrack));
+      fd.append('panel_dot', String(panelDot));
+      fd.append('panel_line', String(panelLine));
+
+      // Defaults
+      fd.append('is_panel_changed', 'false');
+      fd.append('panel_shade', 'false');
+      fd.append('camera_lens_ok', 'true');
+      fd.append('fingerprint_ok', 'true');
+
+      // AI flags — mirror the manual selections
+      fd.append('ai_screen_crack', String(screenCrack));
+      fd.append('ai_panel_dot', String(panelDot));
+      fd.append('ai_panel_line', String(panelLine));
+
+      const res = await fetch('/api/predict', {
+        method: 'POST',
+        body: fd,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? 'Prediction failed.');
+      setResult(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* Modal */}
+      <div className="relative w-full max-w-md bg-[#0d0d0d] border border-gray-800 rounded-2xl p-6 space-y-5 shadow-2xl">
+
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-[#f7f435]" />
+            <h2 className="text-lg font-bold">Get Suggested Price</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-white transition"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Phone info summary */}
+        <div className="bg-white/5 border border-gray-800 rounded-xl px-4 py-3 space-y-1 text-sm text-gray-300">
+          <div className="flex justify-between">
+            <span className="text-gray-500">Model</span>
+            <span className="font-medium">{phone.model}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">Brand</span>
+            <span className="font-medium">{phone.company}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">Condition Score</span>
+            <span className="font-medium text-[#f7f435]">{phone.condition_score ?? 'N/A'} / 20</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">PTA Approved</span>
+            <span className="font-medium">
+              {phone.pta_status === 'approved' ? 'Yes' : 'No'}
+            </span>
+          </div>
+        </div>
+
+        {/* Damage flags */}
+        <div>
+          <p className="text-sm font-semibold text-gray-300 mb-3">Select any visible damage:</p>
+          <div className="space-y-2">
+            {[
+              { label: 'Screen Crack', value: screenCrack, set: setScreenCrack },
+              { label: 'Panel Dot', value: panelDot, set: setPanelDot },
+              { label: 'Panel Line', value: panelLine, set: setPanelLine },
+            ].map(({ label, value, set }) => (
+              <label
+                key={label}
+                className={`flex items-center justify-between px-4 py-3 rounded-xl border cursor-pointer transition ${
+                  value
+                    ? 'border-red-500/60 bg-red-500/10 text-red-300'
+                    : 'border-gray-800 bg-white/5 text-gray-400 hover:border-gray-600'
+                }`}
+              >
+                <span className="text-sm">{label}</span>
+                <input
+                  type="checkbox"
+                  checked={value}
+                  onChange={(e) => set(e.target.checked)}
+                  className="accent-[#f7f435] w-4 h-4"
+                />
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Error */}
+        {error && (
+          <div className="text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+            {error}
+          </div>
+        )}
+
+        {/* Result */}
+        {result && (
+          <div className="bg-[#f7f435]/10 border border-[#f7f435]/30 rounded-xl px-4 py-4 text-center">
+            <p className="text-xs text-gray-400 mb-1">Suggested Price Range</p>
+            <p className="text-2xl font-bold text-[#f7f435]">
+              Rs. {result.min_price?.toLocaleString()} – Rs. {result.max_price?.toLocaleString()}
+            </p>
+          </div>
+        )}
+
+        {/* CTA */}
+        <button
+          onClick={handlePredict}
+          disabled={loading}
+          className="w-full py-3 rounded-xl font-bold text-black bg-[#f7f435] hover:bg-yellow-300 disabled:opacity-60 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
+        >
+          {loading ? (
+            <>
+              <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              Predicting...
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4" />
+              {result ? 'Recalculate' : 'Get Suggested Price'}
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function ProductDetailPage() {
   const params = useParams();
   const phoneId = params.id as string;
@@ -76,6 +263,7 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [sellerName, setSellerName] = useState('Loading...');
   const [sellerEmail, setSellerEmail] = useState('Loading...');
+  const [showPriceModal, setShowPriceModal] = useState(false);
 
   /* 🔹 Fetch phones */
   useEffect(() => {
@@ -104,8 +292,6 @@ export default function ProductDetailPage() {
 
       try {
         const res = await fetch(`/api/users/${phone.user_id}`);
-
-        console.log('Fetching seller info for user ID:', phone.user_id);
         const data = await res.json();
         setSellerName(data.full_name || 'Unknown Seller');
         setSellerEmail(data.email || 'No Email');
@@ -117,56 +303,48 @@ export default function ProductDetailPage() {
 
     fetchSeller();
   }, [phone]);
-  const [user, setUser] = useState<any>(null)
 
-      useEffect(() => {
-      supabase.auth.getUser().then(({ data }) => {
-        setUser(data.user)
-      })
-    }, [])
-  const router = useRouter()
+  const [user, setUser] = useState<any>(null);
 
-async function handleContact(receiverId: string) {
-  const currentUserId = user?.id;
-  if (!currentUserId) return;
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+    });
+  }, []);
 
-  // Don't allow chatting with yourself
-  if (currentUserId === receiverId) return;
+  const router = useRouter();
 
-  // 1️⃣ Look for an existing conversation in BOTH orderings (A→B or B→A)
-  const { data: rows } = await supabase
-    .from("conversation")
-    .select("id")
-    .or(
-      `and(user1_id.eq.${currentUserId},user2_id.eq.${receiverId}),and(user1_id.eq.${receiverId},user2_id.eq.${currentUserId})`
-    )
-    .limit(1);
+  async function handleContact(receiverId: string) {
+    const currentUserId = user?.id;
+    if (!currentUserId) return;
+    if (currentUserId === receiverId) return;
 
-  let conversationId = rows?.[0]?.id ?? null;
-
-  // 2️⃣ If none found, create a new one
-  if (!conversationId) {
-    const { data: newConvo, error } = await supabase
+    const { data: rows } = await supabase
       .from("conversation")
-      .insert({
-        user1_id: currentUserId,
-        user2_id: receiverId,
-      })
       .select("id")
-      .single();
+      .or(
+        `and(user1_id.eq.${currentUserId},user2_id.eq.${receiverId}),and(user1_id.eq.${receiverId},user2_id.eq.${currentUserId})`
+      )
+      .limit(1);
 
-    if (error) {
-      console.error("Failed to create conversation:", error);
-      return;
+    let conversationId = rows?.[0]?.id ?? null;
+
+    if (!conversationId) {
+      const { data: newConvo, error } = await supabase
+        .from("conversation")
+        .insert({ user1_id: currentUserId, user2_id: receiverId })
+        .select("id")
+        .single();
+
+      if (error) {
+        console.error("Failed to create conversation:", error);
+        return;
+      }
+      conversationId = newConvo.id;
     }
-    conversationId = newConvo.id;
+
+    router.push(`/chats?conversation=${conversationId}`);
   }
-
-  // 3️⃣ Redirect to the (existing or new) conversation
-  router.push(`/chats?conversation=${conversationId}`);
-}
-
-
 
   /* 🔹 Add to Cart */
   function addToCart() {
@@ -211,19 +389,16 @@ async function handleContact(receiverId: string) {
       ? phone.pictures
       : ['https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600'];
 
-  /* 🔹 Carousel controls */
   const nextImage = () =>
     setCurrentImageIndex((prev) => (prev + 1) % images.length);
 
   const prevImage = () =>
-    setCurrentImageIndex(
-      (prev) => (prev - 1 + images.length) % images.length
-    );
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
 
   const similarPhones = phones
     .filter(
       (p) =>
-        p.company === phone.company&&
+        p.company === phone.company &&
         p.id !== phone.id &&
         p.status === 'active'
     )
@@ -234,6 +409,14 @@ async function handleContact(receiverId: string) {
   return (
     <div className="min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4">
+
+        {/* Price Prediction Modal */}
+        {showPriceModal && (
+          <PricePredictionModal
+            phone={phone}
+            onClose={() => setShowPriceModal(false)}
+          />
+        )}
 
         {/* Back */}
         <Link
@@ -257,14 +440,12 @@ async function handleContact(receiverId: string) {
                 </div>
               )}
 
-              {/* Main Image */}
               <img
                 src={images[currentImageIndex]}
                 alt={phone.model}
                 className="w-full h-full object-cover"
               />
 
-              {/* Arrows */}
               {images.length > 1 && (
                 <>
                   <button
@@ -273,7 +454,6 @@ async function handleContact(receiverId: string) {
                   >
                     <ChevronLeft />
                   </button>
-
                   <button
                     onClick={nextImage}
                     className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/60 p-2 rounded-full"
@@ -284,7 +464,6 @@ async function handleContact(receiverId: string) {
               )}
             </div>
 
-            {/* Thumbnails */}
             {images.length > 1 && (
               <div className="flex gap-3 mt-4">
                 {images.map((img, i) => (
@@ -292,16 +471,10 @@ async function handleContact(receiverId: string) {
                     key={i}
                     onClick={() => setCurrentImageIndex(i)}
                     className={`w-20 h-20 rounded-xl overflow-hidden border ${
-                      i === currentImageIndex
-                        ? 'border-[#f7f435]'
-                        : 'border-gray-700'
+                      i === currentImageIndex ? 'border-[#f7f435]' : 'border-gray-700'
                     }`}
                   >
-                    <img
-                      src={img}
-                      alt="thumbnail"
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={img} alt="thumbnail" className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>
@@ -318,8 +491,18 @@ async function handleContact(receiverId: string) {
               <span>{phone.company}</span>
             </div>
 
-            <div className="text-4xl font-bold text-[#f7f435]">
-              Rs. {phone.price.toLocaleString()}
+            <div className="flex items-end gap-4 flex-wrap">
+              <div className="text-4xl font-bold text-[#f7f435]">
+                Rs. {phone.price.toLocaleString()}
+              </div>
+              {/* Get Suggested Price button — lives right next to the price */}
+              <button
+                onClick={() => setShowPriceModal(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#f7f435]/40 bg-[#f7f435]/10 hover:bg-[#f7f435]/20 text-[#f7f435] text-xs font-semibold transition"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                Get Suggested Price
+              </button>
             </div>
 
             <div className="flex items-center gap-2 text-sm text-gray-400">
@@ -350,7 +533,6 @@ async function handleContact(receiverId: string) {
                 <div className="space-y-3">
                   {sensorDiagnostics.map((item, idx) => {
                     const primitive = formatPrimitive(item);
-
                     return (
                       <div key={idx} className="rounded-xl border border-gray-800 bg-black/20 p-4 space-y-3">
                         <div className="flex items-center justify-between">
@@ -404,12 +586,10 @@ async function handleContact(receiverId: string) {
 
             {/* Actions */}
             <div className="flex flex-wrap gap-3">
-              
-
               <button
                 onClick={addToCart}
                 className="px-6 py-3.5 rounded-lg text-black font-semibold"
-                 style={{ backgroundColor: '#f7f434' }}
+                style={{ backgroundColor: '#f7f434' }}
               >
                 Save
               </button>
@@ -448,7 +628,6 @@ async function handleContact(receiverId: string) {
             <h2 className="text-3xl font-bold mb-6">
               Similar Phones <span className="text-[#f7f435]">You May Like</span>
             </h2>
-
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {similarPhones.map((p) => (
                 <ProductCard key={p.id} phone={p} />

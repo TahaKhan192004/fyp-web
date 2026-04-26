@@ -13,7 +13,7 @@ interface Phone {
   pictures?: string[];
   condition_score?: number;
   description?: string;
-  pta_status?: boolean;
+  pta_status?: 'approved' | 'not-approved';
   price?: number;
   sensor_diagnostics_result?: unknown;
   'sensor-diagnostics-result'?: unknown;
