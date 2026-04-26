@@ -40,7 +40,7 @@ interface Phone {
   condition_score?: number;
   status?: string;
   damage_report_pdf?: string;
-  pta_status?: 'approved' | 'not-approved';
+  pta_status?: 'approved' | 'non-approved';
   sensor_diagnostics_result?: unknown;
   'sensor-diagnostics-result'?: unknown;
 }
@@ -101,23 +101,18 @@ function PricePredictionModal({
       fd.append('ram', phone.ram ?? '');
       fd.append('storage', phone.storage ?? '');
       fd.append('condition_score', String(phone.condition_score ?? 10));
-      // 2. Clean up the conversion (in both places in the modal)
       const ptaApproved = phone.pta_status === 'approved';
       fd.append('pta_approved', ptaApproved ? 'true' : 'false');
-    
 
-      // User-selected flags
       fd.append('screen_crack', String(screenCrack));
       fd.append('panel_dot', String(panelDot));
       fd.append('panel_line', String(panelLine));
 
-      // Defaults
       fd.append('is_panel_changed', 'false');
       fd.append('panel_shade', 'false');
       fd.append('camera_lens_ok', 'true');
       fd.append('fingerprint_ok', 'true');
 
-      // AI flags — mirror the manual selections
       fd.append('ai_screen_crack', String(screenCrack));
       fd.append('ai_panel_dot', String(panelDot));
       fd.append('ai_panel_line', String(panelLine));
@@ -285,7 +280,7 @@ export default function ProductDetailPage() {
     if (phoneId) fetchPhones();
   }, [phoneId]);
 
-  /* 🔹 Fetch seller username */
+  /* 🔹 Fetch seller */
   useEffect(() => {
     async function fetchSeller() {
       if (!phone?.user_id) return;
@@ -298,6 +293,7 @@ export default function ProductDetailPage() {
       } catch (err) {
         console.error(err);
         setSellerName('Unknown Seller');
+        setSellerEmail('No Email');
       }
     }
 
@@ -495,7 +491,6 @@ export default function ProductDetailPage() {
               <div className="text-4xl font-bold text-[#f7f435]">
                 Rs. {phone.price.toLocaleString()}
               </div>
-              {/* Get Suggested Price button — lives right next to the price */}
               <button
                 onClick={() => setShowPriceModal(true)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#f7f435]/40 bg-[#f7f435]/10 hover:bg-[#f7f435]/20 text-[#f7f435] text-xs font-semibold transition"
@@ -575,12 +570,16 @@ export default function ProductDetailPage() {
 
             {/* Seller */}
             <div className="glass-panel p-4 rounded-xl">
-              <h3 className="font-semibold mb-2">Seller</h3>
+              <h3 className="font-semibold mb-3">Seller</h3>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#f7f435] text-black rounded-full flex items-center justify-center font-bold">
+                <div className="w-10 h-10 bg-[#f7f435] text-black rounded-full flex items-center justify-center font-bold shrink-0">
                   {sellerName.charAt(0)}
                 </div>
-                <div>{sellerName}</div>
+                {/* ✅ Now shows both name and email */}
+                <div className="flex flex-col min-w-0">
+                  <span className="font-medium text-white leading-tight">{sellerName}</span>
+                  <span className="text-xs text-gray-400 truncate mt-0.5">{sellerEmail}</span>
+                </div>
               </div>
             </div>
 
