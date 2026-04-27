@@ -6,7 +6,7 @@ import { Slider } from '@/components/ui/slider';
 import ReactMarkdown from 'react-markdown';
 
 export default function Recommendations() {
-  const [budgetRange, setBudgetRange] = React.useState([80000, 150000]);
+  const [maxBudget, setMaxBudget] = React.useState(150000);  // single value now
   const [selectedPriority, setSelectedPriority] = React.useState('overall');
   const [aiResponse, setAiResponse] = React.useState('');
   const [loading, setLoading] = React.useState(false);
@@ -25,10 +25,14 @@ export default function Recommendations() {
     setShowResults(true);
 
     try {
-      const res = await fetch(
-        `/api/phones/recommend?max_price=${budgetRange[1]}&priority=${selectedPriority}`,
-        { cache: 'no-store' }
-      );
+      const params = new URLSearchParams({
+        max_price: String(maxBudget),
+        priority: selectedPriority,
+      });
+
+      const res = await fetch(`/api/phones/recommend?${params}`, {
+        cache: 'no-store',
+      });
 
       if (!res.ok || !res.body) throw new Error('Stream failed');
 
@@ -42,8 +46,7 @@ export default function Recommendations() {
         const { value, done: streamDone } = await reader.read();
         done = streamDone;
         if (value) {
-          const chunk = decoder.decode(value, { stream: true });
-          setAiResponse((prev) => prev + chunk);
+          setAiResponse((prev) => prev + decoder.decode(value, { stream: true }));
         }
       }
     } catch (error) {
@@ -76,20 +79,19 @@ export default function Recommendations() {
           {/* Budget */}
           <div className="mb-8">
             <label className="block font-semibold mb-4">
-              Budget Range:{' '}
+              Max Budget:{' '}
               <span className="text-[#f7f435]">
-                Rs. {budgetRange[0].toLocaleString()} – Rs.{' '}
-                {budgetRange[1].toLocaleString()}
+                Rs. {maxBudget.toLocaleString()}
               </span>
             </label>
 
             <div className="bg-gray-900 rounded-xl p-6 border border-gray-800">
               <Slider
-                min={10000}
+                min={15000}
                 max={300000}
-                step={10000}
-                value={budgetRange}
-                onValueChange={setBudgetRange}
+                step={5000}
+                value={[maxBudget]}
+                onValueChange={(val) => setMaxBudget(val[0])}
               />
               <div className="flex justify-between text-sm text-gray-400 mt-4">
                 <span>Rs. 10,000</span>
