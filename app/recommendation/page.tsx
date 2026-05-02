@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { Sparkles, Battery, Camera, Gamepad2, Star, TrendingUp } from 'lucide-react';
+import { Sparkles, Battery, Camera, Check, Gamepad2, Star, TrendingUp } from 'lucide-react';
 import { Slider } from '@/components/ui/slider';
 import ReactMarkdown from 'react-markdown';
 
@@ -123,7 +123,7 @@ export default function Recommendations() {
                   >
                     {active && (
                       <div className="absolute top-2 right-2 w-5 h-5 bg-[#f7f435] rounded-full flex items-center justify-center">
-                        <span className="text-black text-xs font-bold">✓</span>
+                        <Check className="h-3.5 w-3.5 text-black" />
                       </div>
                     )}
 

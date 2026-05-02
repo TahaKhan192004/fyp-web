@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // 🔁 Call FastAPI streaming endpoint
+    // Call FastAPI streaming endpoint
     const baseUrl = requireBaseUrl('FASTAPI_RECOMMENDATION_BASE_URL');
     const endpoint = new URL('/recommend-stream/', baseUrl);
     endpoint.searchParams.set('max_price', max_price);

@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/app/lib/supabaseClient';
 
-/* 🔹 Phone Schema */
+/* Phone schema */
 interface Phone {
   id: string;
   uuid: string;
@@ -81,7 +81,7 @@ function formatPrimitive(value: unknown) {
   return null;
 }
 
-/* 🔹 Price Prediction Modal */
+/* Price prediction modal */
 function PricePredictionModal({
   phone,
   onClose,
@@ -267,7 +267,7 @@ export default function ProductDetailPage() {
   const [sellerEmail, setSellerEmail] = useState('Loading...');
   const [showPriceModal, setShowPriceModal] = useState(false);
 
-  /* 🔹 Fetch phones */
+  /* Fetch phones */
   useEffect(() => {
     async function fetchPhones() {
       try {
@@ -287,7 +287,7 @@ export default function ProductDetailPage() {
     if (phoneId) fetchPhones();
   }, [phoneId]);
 
-  /* 🔹 Fetch seller */
+  /* Fetch seller */
   useEffect(() => {
     async function fetchSeller() {
       if (!phone?.user_id) return;
@@ -349,7 +349,7 @@ export default function ProductDetailPage() {
     router.push(`/chats?conversation=${conversationId}`);
   }
 
-  /* 🔹 Add to Cart */
+  /* Add to cart */
   function addToCart() {
     if (!phone) return;
 
@@ -431,7 +431,7 @@ export default function ProductDetailPage() {
 
         <div className="grid lg:grid-cols-2 gap-8 mb-16">
 
-          {/* 🔹 IMAGE CAROUSEL */}
+          {/* Image carousel */}
           <div>
             <div className="relative aspect-square bg-gray-900 rounded-2xl overflow-hidden">
 
@@ -624,7 +624,6 @@ export default function ProductDetailPage() {
                 <div className="w-10 h-10 bg-[#f7f435] text-black rounded-full flex items-center justify-center font-bold shrink-0">
                   {sellerName.charAt(0)}
                 </div>
-                {/* ✅ Now shows both name and email */}
                 <div className="flex flex-col min-w-0">
                   <span className="font-medium text-white leading-tight">{sellerName}</span>
                   <span className="text-xs text-gray-400 truncate mt-0.5">{sellerEmail}</span>

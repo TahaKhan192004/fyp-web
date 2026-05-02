@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Bot, MessageSquareText, Plus, Search, Sparkles } from "lucide-react";
+import { ArrowLeft, MessageSquareText, Plus, Search, Sparkles } from "lucide-react";
+import BrandLogo from "./BrandLogo";
 
 interface Conversation {
   id: string;
@@ -40,9 +41,7 @@ export default function ChatSidebar({
             <ArrowLeft className="h-4 w-4 text-zinc-400 transition-colors group-hover:text-[#f7f435]" />
           </button>
           <div className="flex min-w-0 flex-1 items-center gap-3">
-            <div className="grid h-11 w-11 place-items-center rounded-2xl bg-[#f7f435] text-black shadow-[0_16px_36px_rgba(247,244,53,0.16)]">
-              <Bot className="h-5 w-5" />
-            </div>
+            <BrandLogo size={44} className="rounded-2xl shadow-[0_16px_36px_rgba(247,244,53,0.16)]" />
             <div className="min-w-0">
               <span className="block truncate font-accent text-xl font-bold leading-tight text-[#f7f435]">
                 IntelliFone
@@ -92,9 +91,7 @@ export default function ChatSidebar({
 
         {!loading && conversations.length === 0 && (
           <div className="rounded-3xl border border-dashed border-white/10 bg-white/[0.025] px-5 py-10 text-center">
-            <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-2xl bg-white/[0.05] text-zinc-500">
-              <Bot className="h-6 w-6" />
-            </div>
+            <BrandLogo size={48} className="mx-auto mb-4 rounded-2xl opacity-55" />
             <p className="font-medium text-zinc-300">No conversations yet</p>
             <p className="mt-1 text-sm text-zinc-600">Start a new chat to get phone guidance.</p>
           </div>

@@ -7,7 +7,7 @@ export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
-  // ✅ unwrap params
+  // Unwrap params
   const { id } = await context.params
 
   console.log("Params:", { id })

@@ -17,7 +17,7 @@ export default function Contact() {
   const [isSending, setIsSending] = React.useState(false);
   const [submitted, setSubmitted] = React.useState(false);
 
-  // ✅ env variables (correct way)
+  // Env variables
   const SERVICE_ID = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!;
   const TEMPLATE_ID = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!;
   const PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!;

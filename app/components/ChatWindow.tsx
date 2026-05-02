@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState, useRef, useCallback } from "react";
 import MessageInput from "./MessageInput";
-import { ArrowLeft, Bot, Cpu, Sparkles } from "lucide-react";
+import { ArrowLeft, Cpu, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import BrandLogo from "./BrandLogo";
 
 interface ChatMessage {
   role: string;
@@ -246,9 +247,7 @@ export default function ChatWindow({
               <ArrowLeft className="w-5 h-5" />
             </button>
           )}
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#f7f435]/35 bg-[#f7f435] text-black shadow-[0_16px_36px_rgba(247,244,53,0.18)]">
-            <Bot className="h-5 w-5" />
-          </div>
+          <BrandLogo size={40} className="rounded-xl shadow-[0_16px_36px_rgba(247,244,53,0.18)]" />
           <div className="min-w-0">
             <p className="font-semibold text-zinc-100 leading-tight">IntelliFone AI</p>
             <p className="text-[11px] text-green-400 flex items-center gap-1.5">
@@ -276,9 +275,7 @@ export default function ChatWindow({
           </div>
         ) : messages.length === 0 ? (
           <div className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center gap-6 text-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-[#f7f435]/35 bg-[#f7f435] text-black shadow-[0_22px_55px_rgba(247,244,53,0.18)]">
-              <Bot className="h-10 w-10" />
-            </div>
+            <BrandLogo size={80} className="rounded-3xl shadow-[0_22px_55px_rgba(247,244,53,0.18)]" />
             <div>
               <p className="mb-2 font-display text-2xl font-bold text-white">
                 Hello! I&apos;m IntelliFone AI
@@ -311,9 +308,7 @@ export default function ChatWindow({
                 className={`flex items-end gap-2 ${isAssistant ? "justify-start" : "justify-end"}`}
               >
                 {isAssistant && (
-                  <div className="mb-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl border border-[#f7f435]/30 bg-[#f7f435]/12 text-[#f7f435]">
-                    <Bot className="h-4 w-4" />
-                  </div>
+                  <BrandLogo size={32} className="mb-0.5 rounded-xl" />
                 )}
 
                 <div

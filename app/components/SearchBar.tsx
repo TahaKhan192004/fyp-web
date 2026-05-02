@@ -1,4 +1,5 @@
 import React from 'react';
+import { Search } from 'lucide-react';
 
 export default function SearchBar({ onSearch, placeholder = "Search phones..." }: { onSearch: (q: string) => void; placeholder?: string }) {
   const [query, setQuery] = React.useState('');
@@ -11,7 +12,7 @@ export default function SearchBar({ onSearch, placeholder = "Search phones..." }
   return (
     <form onSubmit={handleSubmit} className="flex gap-3 w-full max-w-2xl mx-auto">
       <div className="flex-1 relative">
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400">🔎</span>
+        <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
         <input
           type="text"
           value={query}

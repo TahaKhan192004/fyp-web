@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { Camera, Check, X } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { PHONE_BRANDS, PHONE_MODELS_BY_BRAND, type PhoneBrand } from '../lib/phoneCatalog';
 
@@ -195,7 +196,7 @@ export default function SellPhone() {
                     </div>
                   ) : (
                     <label className="border-2 border-dashed border-gray-700 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-yellow-400 transition aspect-square">
-                      <span className="text-3xl text-gray-400 mb-2">📷</span>
+                      <Camera className="mb-2 h-8 w-8 text-gray-400" />
                       <span className="text-sm text-gray-400">Click to upload</span>
                       <input
                         ref={inputRef}
@@ -347,7 +348,7 @@ export default function SellPhone() {
                           : 'bg-green-900/20 border border-green-700 text-green-400'
                       }`}
                     >
-                      <span>{val ? '✗' : '✓'}</span>
+                      {val ? <X className="h-4 w-4" /> : <Check className="h-4 w-4" />}
                       <span>{key.replace(/_/g, ' ')}</span>
                     </div>
                   ))}

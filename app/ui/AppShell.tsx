@@ -3,14 +3,16 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import type { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabaseClient';
-import { Smartphone, LogOut, Bookmark, MessageSquare, Inbox, UserCircle, Bot, Menu, X, TagIcon } from 'lucide-react';
+import { LogOut, Bookmark, Inbox, UserCircle, Bot, Menu, X, TagIcon } from 'lucide-react';
+import BrandLogo from '../components/BrandLogo';
 
 // Routes that should be full-screen (no navbar/footer)
 const FULLSCREEN_ROUTES = ['/chat'];
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = React.useState<any>(null);
+  const [user, setUser] = React.useState<User | null>(null);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false);
   const pathname = usePathname();
@@ -89,7 +91,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 text-xl font-bold shrink-0">
-            <Smartphone className="text-[#f7f435]" />
+            <BrandLogo size={34} />
             <span className="text-[#f7f435] font-accent">IntelliFone</span>
           </Link>
 
@@ -299,7 +301,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             {/* Brand */}
             <div>
               <div className="flex items-center gap-2 text-xl font-bold mb-4">
-                <Smartphone className="w-6 h-6 text-[#f7f435]" />
+                <BrandLogo size={34} />
                 <span className="text-[#f7f435] font-accent">IntelliFone</span>
               </div>
               <p className="text-gray-400 text-sm">

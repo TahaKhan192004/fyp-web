@@ -36,7 +36,7 @@
 //                 id: user.id,
 //                 full_name: fullName,
 //                 created_at: new Date().toISOString()
-//             }); // ✅ just remove returning
+//             });
 
 
 //       if (upsertError) {

@@ -36,9 +36,10 @@ export default function AuthCallback() {
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: '24px',
-        fontSize: '40px'
+        fontSize: '18px',
+        fontWeight: 700
       }}>
-        ✓
+        OK
       </div>
       <h1 style={{ color: '#cac71f', marginBottom: '12px', fontSize: '28px' }}>
         Authentication Successful

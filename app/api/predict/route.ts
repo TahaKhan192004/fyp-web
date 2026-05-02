@@ -13,8 +13,8 @@ export async function POST(req: NextRequest) {
     body: formData,
   });
 
-  const text = await res.text(); // 👈 read as text first
-  console.log('FastAPI raw response:', res.status, text); // 👈 log it
+  const text = await res.text();
+  console.log('FastAPI raw response:', res.status, text);
 
   if (!text) {
     return new Response(JSON.stringify({ error: 'FastAPI returned empty response' }), { status: 500 });

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MessageCircle } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import { useRealtimeChat } from "@/hooks/useRealtimeChat";
 import "./chat.css";
@@ -165,11 +165,13 @@ export default function ChatWindow({ currentUserId, conversationId }: ChatWindow
     }
   }
 
-  // ── Empty state ──────────────────────────────────────────
+  // Empty state
   if (!conversationId) {
     return (
       <div className="chat-window empty">
-        <div className="chat-empty-icon">💬</div>
+        <div className="chat-empty-icon">
+          <MessageCircle className="h-8 w-8" />
+        </div>
         <div style={{ textAlign: "center" }}>
           <p style={{ color: "var(--text-primary)", fontWeight: 600, marginBottom: "0.25rem" }}>
             No conversation selected
@@ -182,7 +184,7 @@ export default function ChatWindow({ currentUserId, conversationId }: ChatWindow
     );
   }
 
-  // ── Group messages by date + consecutive sender ──────────
+  // Group messages by date + consecutive sender
   interface DateGroup {
     dateLabel: string;
     groups: { senderId: string; msgs: Message[] }[];

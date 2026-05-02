@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "../../lib/supabaseClient";
 import { useRouter } from "next/navigation";
+import { MessageCircle } from "lucide-react";
 import Pusher from "pusher-js";
 import "./chat.css";
 
@@ -123,7 +124,7 @@ export default function Inbox({ currentUserId, activeConversation }: InboxProps)
       <div className="inbox-list">
         {conversations.length === 0 && (
           <div className="no-messages">
-            <span style={{ fontSize: "2rem" }}>💬</span>
+            <MessageCircle className="h-8 w-8" />
             <span>No conversations yet</span>
           </div>
         )}

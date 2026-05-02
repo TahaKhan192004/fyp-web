@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useRouter } from 'next/navigation';
+import { Camera } from 'lucide-react';
 import { PHONE_BRANDS, PHONE_MODELS_BY_BRAND, type PhoneBrand } from '../lib/phoneCatalog';
 
 function extractNumber(value: string): string {
@@ -178,7 +179,7 @@ export default function SellPhone() {
                       </div>
                     ) : (
                       <label className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-700 bg-black/20 transition hover:border-[#f7f435] hover:bg-[#f7f435]/5">
-                        <span className="text-2xl text-gray-400 mb-1">📷</span>
+                        <Camera className="mb-2 h-6 w-6 text-gray-400" />
                         <span className="text-xs text-gray-400">Click to upload</span>
                         <input
                           ref={inputRef}

@@ -4,7 +4,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import ProductCard from "../components/card/ProductCard";
 import { Slider } from "../../components/ui/slider";
-import { SlidersHorizontal, X } from "lucide-react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 
 interface Phone {
   id: string;
@@ -42,6 +42,7 @@ const BRANDS: { label: string; pattern: RegExp }[] = [
 ];
 
 const STORAGE_OPTIONS = ["32GB", "64GB", "128GB", "256GB", "512GB", "1TB"];
+const QUICK_SEARCH_BRANDS = ["Apple", "Samsung", "Google", "Xiaomi", "Oppo"];
 
 function normalizeStorage(raw?: string | number): string {
   if (raw === null || raw === undefined || raw === "") return "";
@@ -177,9 +178,16 @@ function FilterPanel({
 export default function Marketplace() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [filters, setFilters] = React.useState(DEFAULT_FILTERS);
+  const [sortBy, setSortBy] = React.useState("newest");
   const [currentPage, setCurrentPage] = React.useState(1);
   const [sidebarOpen, setSidebarOpen] = React.useState(false);
   const itemsPerPage = 1000;
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const initialSearch = params.get("search");
+    if (initialSearch) setSearchQuery(initialSearch);
+  }, []);
 
   const { data: allPhones = [], isLoading } = useQuery<Phone[]>({
     queryKey: ["marketplace-phones"],
@@ -194,8 +202,10 @@ export default function Marketplace() {
 
     const matchesSearch =
       !searchQuery ||
+      phone.name?.toLowerCase().includes(search) ||
       phone.model?.toLowerCase().includes(search) ||
-      phone.company?.toLowerCase().includes(search);
+      phone.company?.toLowerCase().includes(search) ||
+      phone.description?.toLowerCase().includes(search);
 
     const matchesBrand = (() => {
       if (filters.brand === "all") return true;
@@ -216,13 +226,20 @@ export default function Marketplace() {
     return matchesSearch && matchesBrand && matchesStorage && matchesPrice;
   });
 
+  const sortedPhones = [...filteredPhones].sort((a, b) => {
+    if (sortBy === "price-low") return (a.price ?? 0) - (b.price ?? 0);
+    if (sortBy === "price-high") return (b.price ?? 0) - (a.price ?? 0);
+    if (sortBy === "score-high") return (b.condition_score ?? 0) - (a.condition_score ?? 0);
+    return 0;
+  });
+
   React.useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, filters]);
+  }, [searchQuery, filters, sortBy]);
 
-  const totalPages = Math.ceil(filteredPhones.length / itemsPerPage);
+  const totalPages = Math.ceil(sortedPhones.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedPhones = filteredPhones.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedPhones = sortedPhones.slice(startIndex, startIndex + itemsPerPage);
 
   const hasActiveFilters =
     filters.brand !== "all" ||
@@ -231,25 +248,73 @@ export default function Marketplace() {
     filters.priceMax !== 500000;
 
   const resetFilters = () => setFilters(DEFAULT_FILTERS);
+  const clearSearch = () => setSearchQuery("");
 
   return (
     <div className="min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-8 gap-4">
+        <div className="mx-auto mb-8 max-w-4xl text-center">
           <h1 className="text-4xl font-bold">Marketplace</h1>
-          {/* Mobile filter button */}
-          <button
-            className="lg:hidden flex items-center gap-2 px-4 py-2 glass-panel border border-gray-700 rounded-xl text-sm"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <SlidersHorizontal className="w-4 h-4 text-[#f7f435]" />
-            Filters
-            {hasActiveFilters && (
-              <span className="w-2 h-2 rounded-full bg-[#f7f435]" />
-            )}
-          </button>
+          <p className="mt-3 text-sm text-gray-400">
+            Search by title, model, brand, storage, or seller notes.
+          </p>
+
+          <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-3 shadow-2xl shadow-black/20 backdrop-blur">
+            <div className="flex flex-col gap-3 md:flex-row">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
+                <input
+                  type="text"
+                  placeholder="Search iPhone 15, Pixel, Samsung, 128GB..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-[52px] w-full rounded-xl border border-gray-800 bg-black pl-12 pr-12 text-sm text-white placeholder-gray-500 outline-none transition focus:border-[#f7f435]/60"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={clearSearch}
+                    className="absolute right-3 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-lg text-gray-500 hover:bg-white/10 hover:text-white"
+                    aria-label="Clear search"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              <button
+                className="flex h-[52px] items-center justify-center gap-2 rounded-xl bg-[#f7f435] px-6 text-sm font-bold text-black"
+                type="button"
+              >
+                <Search className="h-4 w-4" />
+                Search
+              </button>
+              <button
+                className="flex h-[52px] items-center justify-center gap-2 rounded-xl border border-gray-800 bg-black px-4 text-sm text-gray-300 lg:hidden"
+                onClick={() => setSidebarOpen(true)}
+                type="button"
+              >
+                <SlidersHorizontal className="w-4 h-4 text-[#f7f435]" />
+                Filters
+                {hasActiveFilters && <span className="h-2 w-2 rounded-full bg-[#f7f435]" />}
+              </button>
+            </div>
+
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+              <span className="text-xs text-gray-500">Popular:</span>
+              {QUICK_SEARCH_BRANDS.map((brand) => (
+                <button
+                  key={brand}
+                  type="button"
+                  onClick={() => setSearchQuery(brand)}
+                  className="rounded-full border border-white/10 bg-black/30 px-3 py-1.5 text-xs text-gray-300 hover:border-[#f7f435]/40 hover:text-[#f7f435]"
+                >
+                  {brand}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="flex gap-8">
@@ -293,18 +358,30 @@ export default function Marketplace() {
           {/* Main content */}
           <div className="flex-1 min-w-0">
 
-            {/* Result count + search */}
-            <div className="flex items-center justify-between mb-6 gap-4">
+            <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
               <p className="text-sm text-gray-400 shrink-0">
                 {filteredPhones.length} phone{filteredPhones.length !== 1 ? "s" : ""} found
               </p>
-              <input
-                type="text"
-                placeholder="Search model or brand..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full max-w-xs bg-black border border-gray-800 rounded-xl px-4 py-2 text-sm placeholder-gray-500 focus:outline-none focus:border-[#f7f435]/50"
-              />
+              <div className="flex items-center gap-2">
+                {hasActiveFilters && (
+                  <button
+                    onClick={resetFilters}
+                    className="rounded-lg border border-gray-800 px-3 py-2 text-xs text-gray-400 hover:border-[#f7f435]/40 hover:text-[#f7f435]"
+                  >
+                    Clear filters
+                  </button>
+                )}
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="rounded-lg border border-gray-800 bg-black px-3 py-2 text-sm text-gray-300 outline-none focus:border-[#f7f435]/50"
+                >
+                  <option value="newest">Newest first</option>
+                  <option value="price-low">Price: low to high</option>
+                  <option value="price-high">Price: high to low</option>
+                  <option value="score-high">Best condition</option>
+                </select>
+              </div>
             </div>
 
             {isLoading ? (

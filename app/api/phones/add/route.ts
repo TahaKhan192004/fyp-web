@@ -15,7 +15,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No images provided" }, { status: 400 });
     }
 
-    // 1️⃣ Call FastAPI
+    // Call FastAPI
     const baseUrl = requireBaseUrl("FASTAPI_MAIN_BASE_URL");
     const endpoint = new URL("/damage-detection/", baseUrl).toString();
 
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { pdf_url, condition_score } = fastapiData; // ✅ was pdf_path, FastAPI returns pdf_url
+    const { pdf_url, condition_score } = fastapiData;
 
     if (!pdf_url) {
       return NextResponse.json({ error: "PDF URL missing" }, { status: 500 });
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
 
     console.log(formData.price);
 
-    // 2️⃣ Save DB record
+    // Save DB record
     const { data, error: dbError } = await supabase
       .from("mobile_phones")
       .insert({

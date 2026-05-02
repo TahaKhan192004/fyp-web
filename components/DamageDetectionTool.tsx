@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { supabase } from '@/app/lib/supabaseClient';
+import { Camera } from 'lucide-react';
 
 type DamageDetectionResponse = {
   pdf_url?: string;
@@ -176,7 +177,7 @@ export default function DamageDetectionTool() {
                     </div>
                   ) : (
                     <label className={`border-2 border-dashed border-gray-700 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-yellow-400 transition aspect-square ${isDisabled ? 'opacity-50 pointer-events-none' : ''}`}>
-                      <span className="text-3xl text-gray-400 mb-2">📷</span>
+                      <Camera className="mb-2 h-8 w-8 text-gray-400" />
                       <span className="text-sm text-gray-400">Click to upload</span>
                       <input
                         ref={inputRef}
