@@ -261,7 +261,7 @@ export default function Marketplace() {
             Search by title, model, brand, storage, or seller notes.
           </p>
 
-          <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-3 shadow-2xl shadow-black/20 backdrop-blur">
+          <div className="mt-6">
             <div className="flex flex-col gap-3 md:flex-row">
               <div className="relative flex-1">
                 <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />

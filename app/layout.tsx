@@ -22,6 +22,13 @@ export const metadata: Metadata = {
     template: '%s | IntelliFone',
   },
   description: 'AI-powered phone marketplace with damage detection and smart recommendations.',
+  icons: {
+    icon: [
+      { url: '/if-logo.png', type: 'image/png' },
+    ],
+    shortcut: '/if-logo.png',
+    apple: '/if-logo.png',
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
