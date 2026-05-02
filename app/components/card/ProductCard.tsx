@@ -39,21 +39,21 @@ export default function ProductCard({ phone }: { phone: Phone }) {
   const sensorsTested = diagnostics.length > 0;
 
   return (
-    <div className="glass-panel rounded-2xl overflow-hidden hover:scale-105 transition-transform duration-300">
-      <div className="relative aspect-square bg-gray-900">
+    <div className="glass-panel overflow-hidden rounded-xl border border-white/10 transition-[border-color,transform,box-shadow] duration-200 hover:-translate-y-1 hover:border-[#f7f435]/35 hover:shadow-xl hover:shadow-black/20">
+      <div className="relative aspect-[4/3] bg-gray-900">
         <img
           src={phone.pictures?.[0] || "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400"}
           alt={phone.model}
           className="w-full h-full object-cover"
         />
         {phone.pta_status && (
-          <div className="absolute top-3 right-3 bg-[#f7f435] text-black px-3 py-1 rounded-full flex items-center gap-1 text-xs font-semibold">
+          <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-[#f7f435] px-2 py-1 text-[11px] font-semibold text-black">
             <CheckCircle className="w-3 h-3" /> Verified
           </div>
         )}
 
         <div
-          className={`absolute bottom-3 left-3 px-3 py-1 rounded-full flex items-center gap-1 text-xs font-semibold border ${
+          className={`absolute bottom-2 left-2 flex items-center gap-1 rounded-full border px-2 py-1 text-[11px] font-semibold backdrop-blur ${
             sensorsTested
               ? "bg-emerald-400/15 text-emerald-200 border-emerald-400/25"
               : "bg-gray-900/50 text-gray-200 border-gray-700/60"
@@ -61,31 +61,40 @@ export default function ProductCard({ phone }: { phone: Phone }) {
           title={sensorsTested ? "Sensor diagnostics available" : "Sensor diagnostics not provided"}
         >
           <Activity className="w-3 h-3" />
-          {sensorsTested ? `Sensors tested (${diagnostics.length})` : "Sensors untested"}
+          {sensorsTested ? `${diagnostics.length} sensors` : "Untested"}
         </div>
       </div>
 
-      <div className="p-4">
-        <h3 className="font-display font-bold text-lg mb-2">{phone.model}</h3>
-        <div className="flex items-center justify-between mb-3">
-          <span className="font-metric text-[#f7f435] text-2xl font-bold">
+      <div className="p-3">
+        <h3 className="mb-1 truncate font-display text-base font-bold" title={phone.name || phone.model}>
+          {phone.name || phone.model}
+        </h3>
+        {(phone.company || phone.name) && (
+          <p className="mb-2 truncate text-xs text-gray-500">
+            {[phone.company, phone.name ? phone.model : null].filter(Boolean).join(' • ')}
+          </p>
+        )}
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <span className="font-metric text-xl font-bold text-[#f7f435]">
             Rs. {phone.price?.toLocaleString()}
           </span>
           {phone.condition_score && (
-            <span className="text-sm text-gray-400">Score: {phone.condition_score}/20</span>
+            <span className="shrink-0 rounded-full bg-white/5 px-2 py-1 text-xs text-gray-400">
+              {phone.condition_score}/20
+            </span>
           )}
         </div>
 
-        <div className="flex gap-2 text-xs text-gray-400 mb-4">
-          {phone.storage && <span className="bg-gray-800 px-2 py-1 rounded">{phone.storage} GBs</span>}
+        <div className="mb-3 flex gap-2 text-xs text-gray-400">
+          {phone.storage && <span className="rounded bg-gray-800 px-2 py-1">{phone.storage} GBs</span>}
           {phone.ram && (
-            <span className="bg-gray-800 px-2 py-1 rounded">{phone.ram} GBs</span>
+            <span className="rounded bg-gray-800 px-2 py-1">{phone.ram} GBs</span>
           )}
         </div>
 
           <Link
             href={`/phones/${phone.id}`}
-            className="block w-full text-center py-2 rounded-lg  text-black font-semibold hover:bg-yellow-500 transition"
+            className="block w-full rounded-lg py-2 text-center text-sm font-semibold text-black transition hover:bg-yellow-500"
             style={{backgroundColor: "#f7f434"}}
           >
             View Details

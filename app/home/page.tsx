@@ -21,6 +21,23 @@ import {
 import ProductCard from '../components/card/ProductCard';
 import SearchBar from '../components/SearchBar';
 //hey
+interface HomePhone {
+  id: string;
+  uuid: string;
+  name?: string;
+  model: string;
+  company?: string;
+  ram?: string;
+  storage?: string | number;
+  pictures?: string[];
+  condition_score?: number;
+  description?: string;
+  pta_status?: 'approved' | 'non-approved';
+  price?: number;
+  sensor_diagnostics_result?: unknown;
+  'sensor-diagnostics-result'?: unknown;
+}
+
 const capabilityCards = [
   {
     title: 'AI Damage Detection',
@@ -136,9 +153,8 @@ function Reveal({
 }
 
 export default function Home() {
-  const [searchQuery, setSearchQuery] = React.useState('');
   const [carouselIndex, setCarouselIndex] = React.useState(0);
-  const [phones, setPhones] = React.useState<any[]>([]);
+  const [phones, setPhones] = React.useState<HomePhone[]>([]);
 
   React.useEffect(() => {
     let mounted = true;
@@ -170,7 +186,6 @@ export default function Home() {
   }, []);
 
   const handleSearch = (query: string) => {
-    setSearchQuery(query);
     window.location.href = '/marketplace?search=' + encodeURIComponent(query);
   };
 
@@ -183,8 +198,6 @@ export default function Home() {
   };
 
   const visiblePhones = phones.slice(carouselIndex, carouselIndex + 3);
-  const featuredCount = phones.length;
-
   return (
     <div className="min-h-screen pb-12">
       <section className="relative overflow-hidden pt-0">
@@ -219,11 +232,7 @@ export default function Home() {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8 animate-fade-up-delay-2">
-                <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 backdrop-blur">
-                  <div className="font-metric text-2xl text-white">{featuredCount}+</div>
-                  <div className="text-xs text-gray-400 uppercase tracking-[0.18em] mt-1">Live Listings</div>
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-8 animate-fade-up-delay-2 max-w-3xl">
                 <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4 backdrop-blur">
                   <div className="font-metric text-2xl text-white">AI</div>
                   <div className="text-xs text-gray-400 uppercase tracking-[0.18em] mt-1">Verification</div>

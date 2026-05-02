@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../lib/supabaseClient';
+import { PHONE_BRANDS, PHONE_MODELS_BY_BRAND, type PhoneBrand } from '../lib/phoneCatalog';
 
 const DEFAULT_CONDITIONS = {
   is_panel_changed: false,
@@ -35,7 +36,14 @@ type VerificationResult = {
   condition_score: number;
   ai_flags: Record<string, boolean>;
   price_range: PriceResult;
-  damage_detection: any;
+  damage_detection: unknown;
+};
+
+type FormDataState = {
+  brand: '' | PhoneBrand;
+  model: string;
+  ram: string;
+  storage: string;
 };
 
 export default function SellPhone() {
@@ -43,9 +51,7 @@ export default function SellPhone() {
   const frontInputRef = useRef<HTMLInputElement>(null);
   const backInputRef = useRef<HTMLInputElement>(null);
 
-  const [user, setUser] = useState<any>(null);
-
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataState>({
     brand: '',
     model: '',
     ram: '',
@@ -59,14 +65,14 @@ export default function SellPhone() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<VerificationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const selectedModels = formData.brand ? PHONE_MODELS_BY_BRAND[formData.brand] : [];
 
   /* -------------------- AUTH -------------------- */
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (!data?.user) router.push('/signin');
-      else setUser(data.user);
     });
-  }, []);
+  }, [router]);
 
   /* -------------------- IMAGE HANDLERS -------------------- */
   const handleImageChange = (
@@ -210,20 +216,54 @@ export default function SellPhone() {
         <div className="bg-gray-900 p-6 rounded-xl border border-gray-700 space-y-3">
           <h2 className="text-xl font-bold">Phone Details</h2>
 
-          {[
-            { key: 'brand', placeholder: 'Brand (e.g. Samsung)' },
-            { key: 'model', placeholder: 'Model (e.g. Galaxy S21)' },
-            { key: 'ram', placeholder: 'RAM (e.g. 8GB)' },
-            { key: 'storage', placeholder: 'Storage (e.g. 128GB)' },
-          ].map(({ key, placeholder }) => (
+          <select
+            className="w-full bg-black border border-gray-700 p-3 rounded-xl text-white focus:outline-none focus:border-[#f7f435]"
+            value={formData.brand}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                brand: e.target.value as FormDataState['brand'],
+                model: '',
+              })
+            }
+          >
+            <option value="">Select brand</option>
+            {PHONE_BRANDS.map((brand) => (
+              <option key={brand} value={brand}>
+                {brand}
+              </option>
+            ))}
+          </select>
+
+          {formData.brand && (
+            <select
+              className="w-full bg-black border border-gray-700 p-3 rounded-xl text-white focus:outline-none focus:border-[#f7f435]"
+              value={formData.model}
+              onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+            >
+              <option value="">Select {formData.brand} model</option>
+              {selectedModels.map((model) => (
+                <option key={model} value={model}>
+                  {model}
+                </option>
+              ))}
+            </select>
+          )}
+
+          <div className="grid sm:grid-cols-2 gap-3">
             <input
-              key={key}
-              className="w-full bg-black border border-gray-700 p-3 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-yellow-400"
-              placeholder={placeholder}
-              value={(formData as any)[key]}
-              onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+              className="w-full bg-black border border-gray-700 p-3 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f7f435]"
+              placeholder="RAM (e.g. 8GB)"
+              value={formData.ram}
+              onChange={(e) => setFormData({ ...formData, ram: e.target.value })}
             />
-          ))}
+            <input
+              className="w-full bg-black border border-gray-700 p-3 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#f7f435]"
+              placeholder="Storage (e.g. 128GB)"
+              value={formData.storage}
+              onChange={(e) => setFormData({ ...formData, storage: e.target.value })}
+            />
+          </div>
         </div>
 
         {/* CONDITION FLAGS */}
@@ -238,7 +278,7 @@ export default function SellPhone() {
               <label key={key} className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={(conditions as any)[key]}
+                  checked={conditions[key as keyof typeof conditions]}
                   onChange={(e) =>
                     setConditions({ ...conditions, [key]: e.target.checked })
                   }

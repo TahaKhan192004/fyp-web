@@ -49,7 +49,7 @@ export default function Recommendations() {
           setAiResponse((prev) => prev + decoder.decode(value, { stream: true }));
         }
       }
-    } catch (error) {
+    } catch {
       setAiResponse('Failed to get recommendations. Please try again.');
       setLoading(false);
     }
@@ -94,7 +94,7 @@ export default function Recommendations() {
                 onValueChange={(val) => setMaxBudget(val[0])}
               />
               <div className="flex justify-between text-sm text-gray-400 mt-4">
-                <span>Rs. 10,000</span>
+                <span>Rs. 15,000</span>
                 <span>Rs. 300,000</span>
               </div>
             </div>

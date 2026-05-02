@@ -60,6 +60,120 @@ const DEFAULT_FILTERS = {
   priceMax: 500000,
 };
 
+type MarketplaceFilters = typeof DEFAULT_FILTERS;
+
+interface FilterPanelProps {
+  filters: MarketplaceFilters;
+  hasActiveFilters: boolean;
+  resetFilters: () => void;
+  setFilters: React.Dispatch<React.SetStateAction<MarketplaceFilters>>;
+}
+
+function FilterPanel({
+  filters,
+  hasActiveFilters,
+  resetFilters,
+  setFilters,
+}: FilterPanelProps) {
+  return (
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold flex items-center gap-2">
+          <SlidersHorizontal className="w-4 h-4 text-[#f7f435]" />
+          Filters
+        </h2>
+        {hasActiveFilters && (
+          <button
+            onClick={resetFilters}
+            className="text-xs text-[#f7f435] hover:underline flex items-center gap-1"
+          >
+            <X className="w-3 h-3" />
+            Clear all
+          </button>
+        )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-3">Brand</label>
+        <div className="space-y-1">
+          <button
+            onClick={() => setFilters({ ...filters, brand: "all" })}
+            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+              filters.brand === "all"
+                ? "bg-[#f7f435] text-black font-semibold"
+                : "text-gray-400 hover:text-white hover:bg-white/5"
+            }`}
+          >
+            All Brands
+          </button>
+          {BRANDS.map(({ label }) => (
+            <button
+              key={label}
+              onClick={() => setFilters({ ...filters, brand: label })}
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                filters.brand === label
+                  ? "bg-[#f7f435] text-black font-semibold"
+                  : "text-gray-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-3">Storage</label>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => setFilters({ ...filters, storage: "all" })}
+            className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+              filters.storage === "all"
+                ? "bg-[#f7f435] text-black font-semibold"
+                : "glass-panel border border-gray-800 text-gray-400 hover:text-white"
+            }`}
+          >
+            All
+          </button>
+          {STORAGE_OPTIONS.map((s) => (
+            <button
+              key={s}
+              onClick={() => setFilters({ ...filters, storage: s })}
+              className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+                filters.storage === s
+                  ? "bg-[#f7f435] text-black font-semibold"
+                  : "glass-panel border border-gray-800 text-gray-400 hover:text-white"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-300 mb-1">Price Range</label>
+        <div className="text-xs text-[#f7f435] mb-4">
+          Rs. {filters.priceMin.toLocaleString()} - Rs. {filters.priceMax.toLocaleString()}
+        </div>
+        <Slider
+          min={0}
+          max={500000}
+          step={10000}
+          value={[filters.priceMin, filters.priceMax]}
+          onValueChange={([min, max]) =>
+            setFilters({ ...filters, priceMin: min, priceMax: max })
+          }
+        />
+        <div className="flex justify-between text-xs text-gray-500 mt-2">
+          <span>Rs. 0</span>
+          <span>Rs. 5,00,000</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Marketplace() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [filters, setFilters] = React.useState(DEFAULT_FILTERS);
@@ -118,108 +232,6 @@ export default function Marketplace() {
 
   const resetFilters = () => setFilters(DEFAULT_FILTERS);
 
-  // Shared filter panel content used by both desktop sidebar and mobile drawer
-  const FilterPanel = () => (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-[#f7f435]" />
-          Filters
-        </h2>
-        {hasActiveFilters && (
-          <button
-            onClick={resetFilters}
-            className="text-xs text-[#f7f435] hover:underline flex items-center gap-1"
-          >
-            <X className="w-3 h-3" />
-            Clear all
-          </button>
-        )}
-      </div>
-
-      {/* Brand */}
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-3">Brand</label>
-        <div className="space-y-1">
-          <button
-            onClick={() => setFilters({ ...filters, brand: "all" })}
-            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-              filters.brand === "all"
-                ? "bg-[#f7f435] text-black font-semibold"
-                : "text-gray-400 hover:text-white hover:bg-white/5"
-            }`}
-          >
-            All Brands
-          </button>
-          {BRANDS.map(({ label }) => (
-            <button
-              key={label}
-              onClick={() => setFilters({ ...filters, brand: label })}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-                filters.brand === label
-                  ? "bg-[#f7f435] text-black font-semibold"
-                  : "text-gray-400 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Storage */}
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-3">Storage</label>
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            onClick={() => setFilters({ ...filters, storage: "all" })}
-            className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-              filters.storage === "all"
-                ? "bg-[#f7f435] text-black font-semibold"
-                : "glass-panel border border-gray-800 text-gray-400 hover:text-white"
-            }`}
-          >
-            All
-          </button>
-          {STORAGE_OPTIONS.map((s) => (
-            <button
-              key={s}
-              onClick={() => setFilters({ ...filters, storage: s })}
-              className={`px-3 py-2 rounded-lg text-sm transition-colors ${
-                filters.storage === s
-                  ? "bg-[#f7f435] text-black font-semibold"
-                  : "glass-panel border border-gray-800 text-gray-400 hover:text-white"
-              }`}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Price */}
-      <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">Price Range</label>
-        <div className="text-xs text-[#f7f435] mb-4">
-          Rs. {filters.priceMin.toLocaleString()} - Rs. {filters.priceMax.toLocaleString()}
-        </div>
-        <Slider
-          min={0}
-          max={500000}
-          step={10000}
-          value={[filters.priceMin, filters.priceMax]}
-          onValueChange={([min, max]) =>
-            setFilters({ ...filters, priceMin: min, priceMax: max })
-          }
-        />
-        <div className="flex justify-between text-xs text-gray-500 mt-2">
-          <span>Rs. 0</span>
-          <span>Rs. 5,00,000</span>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -245,7 +257,12 @@ export default function Marketplace() {
           {/* Desktop Sidebar */}
           <aside className="hidden lg:block w-56 shrink-0">
             <div className="glass-panel rounded-2xl border border-gray-800 p-6 sticky top-8">
-              <FilterPanel />
+              <FilterPanel
+                filters={filters}
+                hasActiveFilters={hasActiveFilters}
+                resetFilters={resetFilters}
+                setFilters={setFilters}
+              />
             </div>
           </aside>
 
@@ -263,7 +280,12 @@ export default function Marketplace() {
                 >
                   <X className="w-5 h-5" />
                 </button>
-                <FilterPanel />
+                <FilterPanel
+                  filters={filters}
+                  hasActiveFilters={hasActiveFilters}
+                  resetFilters={resetFilters}
+                  setFilters={setFilters}
+                />
               </div>
             </div>
           )}
@@ -290,7 +312,7 @@ export default function Marketplace() {
                 <div className="inline-block w-12 h-12 border-4 border-[#f7f435] border-t-transparent rounded-full animate-spin" />
               </div>
             ) : paginatedPhones.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 mb-8">
                 {paginatedPhones.map((phone) => (
                   <ProductCard key={phone.id} phone={phone} />
                 ))}

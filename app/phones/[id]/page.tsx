@@ -10,7 +10,6 @@ import {
   ArrowLeft,
   CheckCircle,
   MapPin,
-  ShoppingCart,
   MessageCircle,
   Flag,
   FileText,
@@ -18,10 +17,10 @@ import {
   ChevronRight,
   Sparkles,
   X,
+  ShieldCheck,
+  Gauge,
+  Smartphone,
 } from 'lucide-react';
-import { getOrCreateConversation } from '@/app/lib/chatService';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { SupabaseAuthClient } from '@supabase/supabase-js/dist/module/lib/SupabaseAuthClient';
 import { supabase } from '@/app/lib/supabaseClient';
 
 /* 🔹 Phone Schema */
@@ -29,6 +28,7 @@ interface Phone {
   id: string;
   uuid: string;
   user_id: string;
+  name?: string;
   model: string;
   company: string;
   storage?: string;
@@ -48,6 +48,13 @@ interface Phone {
 interface PricePredictionResult {
   min_price: number;
   max_price: number;
+}
+
+interface SavedPhone {
+  id: string;
+  model: string;
+  price: number;
+  image: string;
 }
 
 function getSensorDiagnostics(phone: Phone): unknown[] {
@@ -300,11 +307,11 @@ export default function ProductDetailPage() {
     fetchSeller();
   }, [phone]);
 
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string } | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
+      setUser(data.user ? { id: data.user.id } : null);
     });
   }, []);
 
@@ -346,9 +353,9 @@ export default function ProductDetailPage() {
   function addToCart() {
     if (!phone) return;
 
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]') as SavedPhone[];
 
-    if (cart.find((item: any) => item.id === phone.id)) {
+    if (cart.find((item) => item.id === phone.id)) {
       alert('Already in cart');
       return;
     }
@@ -391,14 +398,13 @@ export default function ProductDetailPage() {
   const prevImage = () =>
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
 
-  const similarPhones = phones
-    .filter(
-      (p) =>
-        p.company === phone.company &&
-        p.id !== phone.id &&
-        p.status === 'active'
-    )
-    .slice(0, 4);
+  const sameBrandPhones = phones.filter(
+    (p) => p.company === phone.company && p.id !== phone.id
+  );
+  const fallbackPhones = phones.filter(
+    (p) => p.company !== phone.company && p.id !== phone.id
+  );
+  const similarPhones = [...sameBrandPhones, ...fallbackPhones].slice(0, 8);
 
   const sensorDiagnostics = getSensorDiagnostics(phone);
 
@@ -479,7 +485,14 @@ export default function ProductDetailPage() {
 
           {/* Details */}
           <div className="space-y-6">
-            <h1 className="text-4xl font-bold">{phone.model}</h1>
+            <div>
+              <h1 className="text-4xl font-bold">{phone.name || phone.model}</h1>
+              {phone.name && (
+                <p className="mt-2 text-gray-400">
+                  {phone.company} {phone.model}
+                </p>
+              )}
+            </div>
 
             <div className="flex gap-4 text-sm text-gray-400">
               <span>RAM: {phone.ram} GB</span>
@@ -505,11 +518,47 @@ export default function ProductDetailPage() {
               Pakistan
             </div>
 
-            {phone.description && (
-              <div className="glass-panel p-4 rounded-xl">
-                {phone.description}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="glass-panel rounded-xl p-4">
+                <div className="mb-2 flex items-center gap-2 text-sm text-gray-400">
+                  <Smartphone className="h-4 w-4 text-[#f7f435]" />
+                  Device
+                </div>
+                <p className="font-semibold">{phone.company} {phone.model}</p>
               </div>
-            )}
+              <div className="glass-panel rounded-xl p-4">
+                <div className="mb-2 flex items-center gap-2 text-sm text-gray-400">
+                  <Gauge className="h-4 w-4 text-[#f7f435]" />
+                  Condition
+                </div>
+                <p className="font-semibold">
+                  {phone.condition_score ? `${phone.condition_score}/20` : 'Not scored'}
+                </p>
+              </div>
+              <div className="glass-panel rounded-xl p-4">
+                <div className="mb-2 flex items-center gap-2 text-sm text-gray-400">
+                  <ShieldCheck className="h-4 w-4 text-[#f7f435]" />
+                  PTA
+                </div>
+                <p className="font-semibold">
+                  {phone.pta_status === 'approved' ? 'Approved' : 'Not Approved'}
+                </p>
+              </div>
+              <div className="glass-panel rounded-xl p-4">
+                <div className="mb-2 flex items-center gap-2 text-sm text-gray-400">
+                  <CheckCircle className="h-4 w-4 text-[#f7f435]" />
+                  Verification
+                </div>
+                <p className="font-semibold">{phone.verified ? 'AI Verified' : 'Listed by seller'}</p>
+              </div>
+            </div>
+
+            <div className="glass-panel rounded-xl p-5">
+              <h3 className="mb-3 font-semibold">Seller Notes</h3>
+              <p className="text-sm leading-6 text-gray-300">
+                {phone.description || 'The seller has not added a detailed description yet. Ask about battery health, repairs, accessories, warranty, and final price before arranging a meetup.'}
+              </p>
+            </div>
 
             {/* Sensor Diagnostics */}
             <div className="glass-panel p-4 rounded-xl space-y-3">
@@ -621,19 +670,53 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* Similar Phones */}
-        {similarPhones.length > 0 && (
-          <section>
-            <h2 className="text-3xl font-bold mb-6">
-              Similar Phones <span className="text-[#f7f435]">You May Like</span>
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <section className="mb-10 grid gap-4 md:grid-cols-3">
+          <div className="glass-panel rounded-2xl border border-gray-800 p-6">
+            <h3 className="mb-3 text-lg font-bold">Before You Buy</h3>
+            <ul className="space-y-2 text-sm text-gray-400">
+              <li>Check the IMEI and PTA status in person.</li>
+              <li>Test charging, speaker, microphone, Wi-Fi, and cameras.</li>
+              <li>Compare the asking price with the suggested price range.</li>
+            </ul>
+          </div>
+          <div className="glass-panel rounded-2xl border border-gray-800 p-6">
+            <h3 className="mb-3 text-lg font-bold">What To Ask</h3>
+            <ul className="space-y-2 text-sm text-gray-400">
+              <li>Battery health and repair history.</li>
+              <li>Original box, charger, cable, or warranty card.</li>
+              <li>Reason for selling and final negotiable price.</li>
+            </ul>
+          </div>
+          <div className="glass-panel rounded-2xl border border-[#f7f435]/20 bg-[#f7f435]/5 p-6">
+            <h3 className="mb-3 text-lg font-bold">Price Confidence</h3>
+            <p className="text-sm leading-6 text-gray-400">
+              Use the suggested price tool with visible damage details to estimate whether this listing is fair for its condition.
+            </p>
+            <button
+              onClick={() => setShowPriceModal(true)}
+              className="mt-4 rounded-xl bg-[#f7f435] px-4 py-2 text-sm font-semibold text-black"
+            >
+              Check Suggested Price
+            </button>
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-3xl font-bold mb-6">
+            More Phones <span className="text-[#f7f435]">You May Like</span>
+          </h2>
+          {similarPhones.length > 0 ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
               {similarPhones.map((p) => (
                 <ProductCard key={p.id} phone={p} />
               ))}
             </div>
-          </section>
-        )}
+          ) : (
+            <div className="glass-panel rounded-2xl border border-gray-800 p-8 text-center text-gray-400">
+              No other listings are available yet.
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );
