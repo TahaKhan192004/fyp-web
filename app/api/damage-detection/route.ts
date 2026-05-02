@@ -19,11 +19,12 @@ export async function POST(req: Request) {
       body: JSON.stringify(body)
     });
 
-    let data: any = null;
+    let data: Record<string, unknown> = {};
     try {
-      data = await res.json();
+      const parsed = await res.json();
+      data = parsed && typeof parsed === 'object' ? parsed as Record<string, unknown> : {};
     } catch {
-      data = null;
+      data = {};
     }
 
     if (!res.ok) {
@@ -37,7 +38,20 @@ export async function POST(req: Request) {
     return NextResponse.json({
       pdf_url: data.pdf_url,
       condition_score: data.condition_score,
-      ai_detected: data.ai_detected
+      ai_detected: data.ai_detected,
+      result_images: data.result_images,
+      result_image_urls: data.result_image_urls,
+      annotated_images: data.annotated_images,
+      annotated_image_urls: data.annotated_image_urls,
+      processed_images: data.processed_images,
+      processed_image_urls: data.processed_image_urls,
+      output_images: data.output_images,
+      output_image_urls: data.output_image_urls,
+      image_results: data.image_results,
+      front_result_image_url: data.front_result_image_url,
+      back_result_image_url: data.back_result_image_url,
+      front_annotated_image_url: data.front_annotated_image_url,
+      back_annotated_image_url: data.back_annotated_image_url,
     });
   } catch (err) {
     console.error('Damage detection error:', err);

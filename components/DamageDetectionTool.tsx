@@ -9,6 +9,19 @@ type DamageDetectionResponse = {
   pdf_url?: string;
   condition_score?: number;
   ai_detected?: Record<string, unknown>;
+  result_images?: unknown;
+  result_image_urls?: unknown;
+  annotated_images?: unknown;
+  annotated_image_urls?: unknown;
+  processed_images?: unknown;
+  processed_image_urls?: unknown;
+  output_images?: unknown;
+  output_image_urls?: unknown;
+  image_results?: unknown;
+  front_result_image_url?: string;
+  back_result_image_url?: string;
+  front_annotated_image_url?: string;
+  back_annotated_image_url?: string;
   error?: string;
 };
 
@@ -19,6 +32,24 @@ type ImageItem = {
 
 function isLikelyHttpUrl(value: string) {
   return /^https?:\/\//i.test(value);
+}
+
+function collectHttpUrls(value: unknown): string[] {
+  if (!value) return [];
+
+  if (typeof value === 'string') {
+    return isLikelyHttpUrl(value) ? [value] : [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => collectHttpUrls(item));
+  }
+
+  if (typeof value === 'object') {
+    return Object.values(value as Record<string, unknown>).flatMap((item) => collectHttpUrls(item));
+  }
+
+  return [];
 }
 
 function safeFileName(name: string) {
@@ -56,6 +87,37 @@ function scoreTone(score?: number) {
   if (score >= 16) return 'text-emerald-300';
   if (score >= 11) return 'text-[#f7f435]';
   return 'text-red-300';
+}
+
+function getResultImages(result: DamageDetectionResponse | null) {
+  if (!result) return [];
+
+  const labeledImages = [
+    { label: 'Front result image', url: result.front_result_image_url },
+    { label: 'Back result image', url: result.back_result_image_url },
+    { label: 'Front result image', url: result.front_annotated_image_url },
+    { label: 'Back result image', url: result.back_annotated_image_url },
+  ].filter((item): item is { label: string; url: string } => Boolean(item.url && isLikelyHttpUrl(item.url)));
+
+  const groupedUrls = [
+    result.result_images,
+    result.result_image_urls,
+    result.annotated_images,
+    result.annotated_image_urls,
+    result.processed_images,
+    result.processed_image_urls,
+    result.output_images,
+    result.output_image_urls,
+    result.image_results,
+  ].flatMap((value) => collectHttpUrls(value));
+
+  const seen = new Set<string>();
+  return [...labeledImages, ...groupedUrls.map((url, index) => ({ label: `Result image ${index + 1}`, url }))]
+    .filter((item) => {
+      if (seen.has(item.url)) return false;
+      seen.add(item.url);
+      return true;
+    });
 }
 
 export default function DamageDetectionTool() {
@@ -169,6 +231,7 @@ export default function DamageDetectionTool() {
   const pdfUrl = result?.pdf_url;
   const aiDetected = result?.ai_detected && typeof result.ai_detected === 'object' ? result.ai_detected : null;
   const score = typeof result?.condition_score === 'number' ? result.condition_score : undefined;
+  const resultImages = getResultImages(result);
   const detectedIssues = aiDetected
     ? Object.entries(aiDetected).filter(([, value]) => value === true).length
     : 0;
@@ -357,6 +420,38 @@ export default function DamageDetectionTool() {
                       </div>
                     );
                   })}
+              </div>
+            )}
+
+            {resultImages.length > 0 && (
+              <div className="space-y-3">
+                <div>
+                  <h3 className="text-lg font-bold">Result images</h3>
+                  <p className="text-sm text-gray-400">Review the AI-processed images returned by the damage detection model.</p>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {resultImages.map((image) => (
+                    <div key={image.url} className="rounded-2xl border border-gray-800 bg-black/20 p-3">
+                      <div className="mb-3 flex items-center justify-between">
+                        <span className="text-sm font-semibold text-gray-200">{image.label}</span>
+                        <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-gray-400">
+                          AI processed
+                        </span>
+                      </div>
+
+                      <div className="overflow-hidden rounded-xl bg-black">
+                        {/* Backend result URLs are dynamic and may not be configured for next/image domains. */}
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={image.url}
+                          alt={image.label}
+                          className="max-h-[620px] min-h-[420px] w-full object-contain"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
