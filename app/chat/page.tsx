@@ -83,7 +83,7 @@ export default function ChatPage() {
       {/* Sidebar */}
       <div
         className={[
-          "shrink-0 md:w-72",
+          "shrink-0 md:w-[360px]",
           mobileView === "sidebar" ? "w-full block" : "hidden md:block",
         ].join(" ")}
       >
