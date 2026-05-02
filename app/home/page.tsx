@@ -210,7 +210,7 @@ export default function Home() {
                 AI marketplace, verification, pricing, and chat in one flow
               </div>
               <h1 className="font-display text-[2.7rem] sm:text-5xl lg:text-[4.15rem] font-bold mb-4 leading-[0.98] max-w-[12ch]">
-                Buy & Sell Used Phones <span className="text-[#f7f435] font-accent">with Confidence</span>
+                Buy & Sell Used Phones <span className="hero-emphasis text-[#f7f435] font-accent">with Confidence</span>
               </h1>
               <p className="text-base md:text-xl text-gray-400 mb-6 max-w-2xl">
                 AI-powered verification ensures every phone is checked, graded, and guaranteed. Trade smarter with IntelliFone.
@@ -248,7 +248,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="relative flex items-start justify-center pt-2 md:pt-4 lg:pt-0 p-2 md:p-6 animate-fade-up-delay">
+            <div className="theme-keep-dark relative flex items-start justify-center pt-2 md:pt-4 lg:pt-0 p-2 md:p-6 animate-fade-up-delay">
               <div className="absolute inset-0 bg-gradient-to-br from-[#f7f435]/20 via-black to-black rounded-[2.5rem] blur-3xl"></div>
               <div className="absolute left-2 top-8 h-24 w-24 rounded-full bg-[#f7f435]/12 blur-2xl"></div>
               <div className="absolute right-4 bottom-8 h-28 w-28 rounded-full bg-sky-400/10 blur-3xl"></div>

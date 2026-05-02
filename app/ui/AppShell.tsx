@@ -107,7 +107,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 text-xl font-bold shrink-0">
             <BrandLogo size={34} />
-            <span className="text-[#f7f435] font-accent">IntelliFone</span>
+            <span className="brand-wordmark text-[#f7f435] font-accent">IntelliFone</span>
           </Link>
 
           {/* Desktop Nav Links */}
@@ -337,7 +337,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <div>
               <div className="flex items-center gap-2 text-xl font-bold mb-4">
                 <BrandLogo size={34} />
-                <span className="text-[#f7f435] font-accent">IntelliFone</span>
+                <span className="brand-wordmark text-[#f7f435] font-accent">IntelliFone</span>
               </div>
               <p className="text-gray-400 text-sm">
                 Buy & sell used phones with confidence using AI-powered verification.
