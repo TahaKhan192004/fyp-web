@@ -79,7 +79,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex h-screen text-white bg-gray-900 w-full overflow-hidden">
+    <div className="flex h-screen w-full overflow-hidden bg-[#07080b] text-white">
       {/* Sidebar */}
       <div
         className={[

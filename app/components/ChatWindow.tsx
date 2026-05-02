@@ -1,11 +1,43 @@
 "use client";
 import { useEffect, useState, useRef, useCallback } from "react";
 import MessageInput from "./MessageInput";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Bot, Cpu, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
-export default function ChatWindow({ conversationId, userId, onNewConversation, onBack }: any) {
-  const [messages, setMessages] = useState<any[]>([]);
+interface ChatMessage {
+  role: string;
+  content: string;
+}
+
+interface ChatWindowProps {
+  conversationId: string;
+  userId: string;
+  onNewConversation?: (conversationId: string) => void;
+  onBack?: () => void;
+}
+
+function readString(value: unknown) {
+  return typeof value === "string" || typeof value === "number" ? String(value) : "";
+}
+
+function normalizeMessage(message: unknown): ChatMessage | null {
+  if (!message || typeof message !== "object") return null;
+
+  const record = message as Record<string, unknown>;
+  const role = readString(record.role ?? record.sender ?? record.type ?? record.message_type);
+  const content = readString(record.content ?? record.message ?? record.text ?? record.value);
+
+  if (!role || !content) return null;
+  return { role, content };
+}
+
+export default function ChatWindow({
+  conversationId,
+  userId,
+  onNewConversation,
+  onBack,
+}: ChatWindowProps) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
 
@@ -63,22 +95,25 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
           return;
         }
 
+        const responseData = data as Record<string, unknown> | unknown[] | null;
         const rawMsgs =
-          (data && Array.isArray(data.messages) && data.messages) ||
-          (data && Array.isArray(data.history) && data.history) ||
+          (!Array.isArray(responseData) &&
+            responseData &&
+            Array.isArray(responseData.messages) &&
+            responseData.messages) ||
+          (!Array.isArray(responseData) &&
+            responseData &&
+            Array.isArray(responseData.history) &&
+            responseData.history) ||
           (Array.isArray(data) && data) ||
           [];
 
-        const normalized = rawMsgs
-          .map((m: any) => {
-            const role = m?.role ?? m?.sender ?? m?.type ?? m?.message_type;
-            const content = m?.content ?? m?.message ?? m?.text ?? m?.value;
-            if (!role || content == null) return null;
-            return { role: String(role), content: String(content) };
-          })
-          .filter(Boolean);
+        const normalized = rawMsgs.flatMap((message) => {
+          const normalizedMessage = normalizeMessage(message);
+          return normalizedMessage ? [normalizedMessage] : [];
+        });
 
-        setMessages(normalized as any[]);
+        setMessages(normalized);
       } catch (err) {
         console.error(err);
       } finally {
@@ -88,7 +123,7 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
       }
     }
     fetchMessages();
-  }, [conversationId]);
+  }, [conversationId, scheduleScroll]);
 
   /* ─── Send message ─── */
   const sendMessage = async (msg: string) => {
@@ -197,31 +232,33 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
   ];
 
   return (
-    <div
-      className="flex flex-col bg-[#09090b] text-zinc-100 overflow-hidden w-full"
-      style={{ height: "100dvh" }}
-    >
+    <div className="relative flex w-full flex-col overflow-hidden bg-[#07080b] text-zinc-100" style={{ height: "100dvh" }}>
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_0%,rgba(247,244,53,0.10),transparent_32%),radial-gradient(circle_at_88%_16%,rgba(14,165,233,0.10),transparent_28%)]" />
       {/* Header */}
-      <div className="shrink-0 h-16 border-b border-zinc-800 flex items-center px-4 md:px-8 bg-[#09090b]/80 backdrop-blur-md z-10">
+      <div className="relative z-10 flex h-[72px] shrink-0 items-center border-b border-white/10 bg-[#07080b]/82 px-4 shadow-[0_16px_50px_rgba(0,0,0,0.22)] backdrop-blur-xl md:px-8">
         <div className="flex items-center gap-3 w-full">
           {onBack && (
             <button
               onClick={onBack}
-              className="md:hidden p-2 -ml-2 mr-1 text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-zinc-800"
+              className="md:hidden p-2 -ml-2 mr-1 text-zinc-400 hover:text-white transition-colors rounded-lg hover:bg-white/10"
               aria-label="Back to conversations"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
           )}
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#facc15] to-[#f59e0b] flex items-center justify-center text-black font-bold text-sm shadow-lg">
-            AI
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#f7f435]/35 bg-[#f7f435] text-black shadow-[0_16px_36px_rgba(247,244,53,0.18)]">
+            <Bot className="h-5 w-5" />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="font-semibold text-zinc-100 leading-tight">IntelliFone AI</p>
-            <p className="text-[11px] text-green-400 flex items-center gap-1">
+            <p className="text-[11px] text-green-400 flex items-center gap-1.5">
               <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block animate-pulse" />
-              Online
+              Ready for recommendations
             </p>
+          </div>
+          <div className="ml-auto hidden items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-zinc-400 sm:flex">
+            <Cpu className="h-3.5 w-3.5 text-[#f7f435]" />
+            Smart phone guide
           </div>
         </div>
       </div>
@@ -230,33 +267,34 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:px-24 space-y-4"
+        className="relative z-10 overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:px-24 space-y-5"
         style={{ flex: "1 1 0", minHeight: 0 }}
       >
         {loading ? (
           <div className="flex justify-center py-10">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#facc15]" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#f7f435]" />
           </div>
         ) : messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center gap-5">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#facc15] to-[#f59e0b] flex items-center justify-center text-2xl font-bold text-black shadow-xl">
-              AI
+          <div className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center gap-6 text-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-[#f7f435]/35 bg-[#f7f435] text-black shadow-[0_22px_55px_rgba(247,244,53,0.18)]">
+              <Bot className="h-10 w-10" />
             </div>
             <div>
-              <p className="text-lg font-semibold text-zinc-200 mb-1">
+              <p className="mb-2 font-display text-2xl font-bold text-white">
                 Hello! I&apos;m IntelliFone AI
               </p>
-              <p className="text-zinc-500 text-sm max-w-xs">
+              <p className="mx-auto max-w-md text-sm leading-6 text-zinc-400">
                 Ask me about phone specs, prices, comparisons, or get personalised recommendations.
               </p>
             </div>
-            <div className="flex flex-wrap justify-center gap-2 max-w-sm">
+            <div className="flex max-w-xl flex-wrap justify-center gap-2">
               {SUGGESTIONS.map((s) => (
                 <button
                   key={s}
                   onClick={() => sendMessage(s)}
-                  className="px-3 py-2 text-xs rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-300 hover:border-[#facc15] hover:text-[#facc15] transition-all"
+                  className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-zinc-300 shadow-sm hover:border-[#f7f435]/45 hover:bg-[#f7f435]/10 hover:text-[#f7f435]"
                 >
+                  <Sparkles className="h-3.5 w-3.5" />
                   {s}
                 </button>
               ))}
@@ -273,16 +311,16 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
                 className={`flex items-end gap-2 ${isAssistant ? "justify-start" : "justify-end"}`}
               >
                 {isAssistant && (
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#facc15] to-[#f59e0b] flex items-center justify-center text-xs font-bold text-black flex-shrink-0 mb-0.5">
-                    AI
+                  <div className="mb-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl border border-[#f7f435]/30 bg-[#f7f435]/12 text-[#f7f435]">
+                    <Bot className="h-4 w-4" />
                   </div>
                 )}
 
                 <div
-                  className={`max-w-[78%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm ${
+                  className={`max-w-[82%] px-4 py-3 text-sm leading-relaxed shadow-[0_14px_32px_rgba(0,0,0,0.18)] md:max-w-[72%] ${
                     isAssistant
-                      ? "bg-zinc-800 text-zinc-100 rounded-tl-none border border-zinc-700"
-                      : "bg-[#facc15] text-black font-medium rounded-tr-none"
+                      ? "rounded-2xl rounded-tl-md border border-white/10 bg-[#111318]/92 text-zinc-100"
+                      : "rounded-2xl rounded-tr-md bg-[#f7f435] text-black font-medium"
                   }`}
                 >
                   {isAssistant ? (
@@ -317,12 +355,12 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
                           <h3 className="text-sm font-bold text-white mb-1">{children}</h3>
                         ),
                         code: ({ children }) => (
-                          <code className="bg-zinc-900 text-[#facc15] px-1.5 py-0.5 rounded text-xs font-mono">
+                          <code className="bg-zinc-950 text-[#f7f435] px-1.5 py-0.5 rounded text-xs font-mono">
                             {children}
                           </code>
                         ),
                         blockquote: ({ children }) => (
-                          <blockquote className="border-l-2 border-[#facc15] pl-3 text-zinc-400 italic">
+                          <blockquote className="border-l-2 border-[#f7f435] pl-3 text-zinc-400 italic">
                             {children}
                           </blockquote>
                         ),
@@ -335,12 +373,12 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
                     m.content || "\u00a0"
                   )}
                   {isLastAssistant && (
-                    <span className="inline-block w-[2px] h-[1em] bg-[#facc15] ml-0.5 align-middle animate-pulse" />
+                    <span className="inline-block w-[2px] h-[1em] bg-[#f7f435] ml-0.5 align-middle animate-pulse" />
                   )}
                 </div>
 
                 {!isAssistant && (
-                  <div className="w-7 h-7 rounded-lg bg-zinc-700 flex items-center justify-center text-xs flex-shrink-0 mb-0.5">
+                  <div className="mb-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-white/10 text-xs text-zinc-200">
                     U
                   </div>
                 )}
@@ -352,11 +390,11 @@ export default function ChatWindow({ conversationId, userId, onNewConversation, 
       </div>
 
       {/* Input bar */}
-      <div className="shrink-0 p-4 md:p-6 lg:px-24 bg-gradient-to-t from-[#09090b] via-[#09090b] to-transparent">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-2 focus-within:border-[#facc15]/50 transition-all shadow-2xl">
+      <div className="relative z-10 shrink-0 bg-gradient-to-t from-[#07080b] via-[#07080b]/96 to-transparent p-4 md:p-6 lg:px-24">
+        <div className="rounded-2xl border border-white/10 bg-[#101217]/92 p-2 shadow-[0_24px_70px_rgba(0,0,0,0.34)] backdrop-blur-xl transition-all focus-within:border-[#f7f435]/55 focus-within:shadow-[0_26px_80px_rgba(247,244,53,0.10)]">
           <MessageInput onSend={sendMessage} disabled={isStreaming} />
         </div>
-        <p className="text-[10px] text-zinc-600 text-center mt-3 uppercase tracking-tighter">
+        <p className="mt-3 text-center text-[10px] uppercase tracking-[0.18em] text-zinc-600">
           Powered by IntelliFone AI Engine
         </p>
       </div>
