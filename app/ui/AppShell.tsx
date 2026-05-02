@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabaseClient';
-import { LogOut, Bookmark, Inbox, UserCircle, Bot, Menu, X, TagIcon } from 'lucide-react';
+import { LogOut, Bookmark, Inbox, UserCircle, Bot, Menu, X, TagIcon, Moon, Sun } from 'lucide-react';
 import BrandLogo from '../components/BrandLogo';
 
 // Routes that should be full-screen (no navbar/footer)
@@ -15,6 +15,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [user, setUser] = React.useState<User | null>(null);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false);
+  const [theme, setTheme] = React.useState<'dark' | 'light'>('dark');
   const pathname = usePathname();
   const userMenuRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -22,6 +23,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const isFullscreen = FULLSCREEN_ROUTES.some((r) => pathname.startsWith(r));
 
   React.useEffect(() => {
+    const storedTheme = localStorage.getItem('intellifone-theme');
+    const nextTheme = storedTheme === 'light' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    document.documentElement.classList.toggle('light-theme', nextTheme === 'light');
+
     supabase.auth.getUser().then(({ data }) => {
       setUser(data?.user ?? null);
     });
@@ -61,6 +67,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     window.location.href = '/';
   };
 
+  const toggleTheme = () => {
+    setTheme((current) => {
+      const next = current === 'light' ? 'dark' : 'light';
+      localStorage.setItem('intellifone-theme', next);
+      document.documentElement.classList.toggle('light-theme', next === 'light');
+      return next;
+    });
+  };
+
   const navLinks = [
     { href: '/marketplace', label: 'Marketplace' },
     { href: '/add', label: 'Sell' },
@@ -83,9 +98,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <header
         className="glass-panel sticky top-0 z-50 border-b border-gray-800"
         style={{
-          background: 'rgba(14, 14, 16, 0.85)',
+          background: 'var(--shell-bg)',
           backdropFilter: 'blur(16px)',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          borderBottom: '1px solid var(--shell-border)',
         }}
       >
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
@@ -114,6 +129,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex gap-2 items-center">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all text-gray-300 hover:text-[#f7f435] hover:bg-[#f7f435]/10"
+            >
+              {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+              <span>{theme === 'light' ? 'Dark' : 'Light'}</span>
+            </button>
+
             {user ? (
               <>
                 {/* AI Chat */}
@@ -258,6 +283,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
               ))}
 
               <div className="my-2 border-t border-gray-800" />
+
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-300 hover:text-[#f7f435] hover:bg-[#f7f435]/10 transition-all w-full text-left"
+                aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+              >
+                {theme === 'light' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
+                <span>{theme === 'light' ? 'Dark theme' : 'Light theme'}</span>
+              </button>
 
               {user ? (
                 <>

@@ -33,7 +33,20 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (localStorage.getItem('intellifone-theme') === 'light') {
+                  document.documentElement.classList.add('light-theme');
+                }
+              } catch {}
+            `,
+          }}
+        />
+      </head>
       <body className={`${instrumentSans.variable} ${syne.variable}`}>
         <ClientProviders>
           <AppShell> {children}</AppShell>  
